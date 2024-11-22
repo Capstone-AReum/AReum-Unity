@@ -1,0 +1,14 @@
+# Blender 4.2.1 LTS MTL File: 'Chocolate_Splash_Free_005.blend'
+# www.blender.org
+
+newmtl Chocolate_Splash_Free_005
+Ka 1.000000 1.000000 1.000000
+Ks 0.620000 0.620000 0.620000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd F:/Project Bledner/3D Asset/Element/Splash/marketplace/002/chocolate/blend/blend/Chocolate_Splash_Free_005/textures/Chocolate_Splash_Free_005_bcolor.tga
+map_Ns F:/Project Bledner/3D Asset/Element/Splash/marketplace/002/chocolate/blend/blend/Chocolate_Splash_Free_005/textures/Chocolate_Splash_Free_005_rough.tga
+map_refl F:/Project Bledner/3D Asset/Element/Splash/marketplace/002/chocolate/blend/blend/Chocolate_Splash_Free_005/textures/Chocolate_Splash_Free_005_metal.tga
+map_Bump -bm 1.000000 F:/Project Bledner/3D Asset/Element/Splash/marketplace/002/chocolate/blend/blend/Chocolate_Splash_Free_005/textures/Chocolate_Splash_Free_005_norm.tga
