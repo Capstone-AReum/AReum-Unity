@@ -11,6 +11,12 @@ public class ARMultipleObjectController : MonoBehaviour
     [SerializeField]
     ARRaycastManager aRRaycastManager;
 
+    [SerializeField]
+    ARAnchorManager aRAnchorManager;
+
+    [SerializeField]
+    ARPlaneManager aRPlaneManager;
+
     GameObject selectedPrefab;
 
     private static List<ARRaycastHit> hits = new List<ARRaycastHit>();
@@ -52,32 +58,57 @@ public class ARMultipleObjectController : MonoBehaviour
         // 처음 터치된 부분이 plane이라면 거기에 ray를 쏘고 탐지된 객체를 hits에 저장
         if (aRRaycastManager.Raycast(touchPosition, hits, TrackableType.PlaneWithinPolygon))
         {
+            Debug.Log("Raycast hit detected!");
             Pose hitPose = hits[0].pose; // 첫번째로 충돌이 일어난 위치
-            
-            // 새 물체 배치
-            GameObject obj = Instantiate(selectedPrefab, hitPose.position, hitPose.rotation);    // 에디터에서 raycastPrefab에 등록된 프리팹을 인스턴스화하여 배치  
+
+            // 감지된 평면 가져오기
+            ARPlane plane = aRPlaneManager.GetPlane(hits[0].trackableId);
+            if (plane == null)
+            {
+                Debug.LogWarning("No plane found for the hit.");
+                return;
+            }
+
+            // 평면에 앵커 추가
+            ARAnchor anchor = plane.gameObject.AddComponent<ARAnchor>();
+            if (anchor == null)
+            {
+                Debug.LogError("Failed to create anchor.");
+                return;
+            }
+
+            // 앵커에 3D 객체 배치
+            GameObject obj = Instantiate(selectedPrefab, anchor.transform.position, anchor.transform.rotation, anchor.transform);    // 에디터에서 raycastPrefab에 등록된 프리팹을 인스턴스화하여 배치  
 
             // 위치 저장
-            SaveObjectPosition(obj.transform);
+            SaveObjectPosition(anchor);
+        }
+        else
+        {
+            Debug.LogWarning("No Raycast hit detected. Unable to create anchor.");
+            return;
         }
     }
 
-    // 물체 위치를 저장
-    void SaveObjectPosition(Transform objTransform)
+    // 물체 위치 및 앵커 ID 저장
+    void SaveObjectPosition(ARAnchor anchor)
     {
         ObjectData data = new ObjectData
         {
-            position = objTransform.position,
-            rotation = objTransform.rotation
+            position = anchor.transform.position,
+            rotation = anchor.transform.rotation,
+            anchorId = anchor.trackableId.ToString() // 앵커의 고유 ID 저장
         };
         savedObjects.objects.Add(data);
 
         // 저장된 데이터를 JSON으로 변환하여 파일로 저장
         string json = JsonUtility.ToJson(savedObjects);
         File.WriteAllText(Application.persistentDataPath + "/SavedObjects.json", json);
+
+        Debug.Log($"Anchor saved with ID: {data.anchorId}");
     }
 
-    // 저장된 위치 불러오기
+    // 저장된 위치 및 앵커 복원
     void LoadObjectPositions()
     {
         string path = Application.persistentDataPath + "/SavedObjects.json";
@@ -85,19 +116,34 @@ public class ARMultipleObjectController : MonoBehaviour
         {
             string json = File.ReadAllText(path);
 
-            //디버깅용
+            // 디버깅용
             Debug.Log($"Loaded JSON Data: {json}");
 
             savedObjects = JsonUtility.FromJson<ObjectDataList>(json);
 
-            // 저장된 위치에 물체 재배치
+            // 저장된 위치에 물체 및 앵커 재배치
             foreach (var data in savedObjects.objects)
             {
-                // 디버깅용
-                Debug.Log($"Restoring Object at Position: {data.position}, Rotation: {data.rotation}");
-                Instantiate(selectedPrefab, data.position, data.rotation);
+                Pose anchorPose = new Pose(data.position, data.rotation);
+
+                // 새로 추가된 평면에 앵커 복원
+                ARAnchor anchor = new GameObject("RestoredAnchor").AddComponent<ARAnchor>();
+                anchor.transform.position = anchorPose.position;
+                anchor.transform.rotation = anchorPose.rotation;
+
+                if (anchor != null)
+                {
+                    Instantiate(selectedPrefab, anchor.transform.position, anchor.transform.rotation, anchor.transform);
+                    Debug.Log($"Restored object with Anchor ID: {data.anchorId}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Failed to restore anchor at position: {data.position}");
+                }
             }
-        }else{ //디버깅용
+        }
+        else
+        {
             Debug.LogWarning("No saved objects to load.");
         }
     }
@@ -117,8 +163,9 @@ public class ARMultipleObjectController : MonoBehaviour
 [System.Serializable]
 public class ObjectData
 {
-    public Vector3 position;
-    public Quaternion rotation;
+    public Vector3 position;      // 위치
+    public Quaternion rotation;  // 회전
+    public string anchorId;      // 앵커 고유 ID
 }
 
 [System.Serializable]
