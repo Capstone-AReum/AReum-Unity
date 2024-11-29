@@ -50,6 +50,8 @@ public class CloudAnchorManager : MonoBehaviour
     private string strCloudAnchorId;
 
 
+    private bool isResolving = false; // 리졸빙 중 여부를 추적
+
     void Start()
     {
         // 버튼 이벤트 연결
@@ -108,22 +110,6 @@ public class CloudAnchorManager : MonoBehaviour
             }
         }
     }
-
-    // 클라우드 앵커 등록
-    /*void HostProcessing()
-    {
-        if (localAnchor == null) return;
-
-        // 이미 클라우드 앵커가 생성 중인 경우 중단
-        if (cloudAnchor != null)
-        {
-            Debug.LogWarning("이미 클라우드 앵커 생성 중입니다.");
-            return;
-        }
-        
-        HostCloudAnchor();
-
-    }*/
 
     private void HostCloudAnchor()
     {
@@ -188,34 +174,6 @@ public class CloudAnchorManager : MonoBehaviour
         }
     }
 
-    /*void HostPending()
-    {
-        string mappingText = "";
-        if (cloudAnchor.cloudAnchorState == CloudAnchorState.Success)
-        {
-            mappingText = $"클라우드 앵커 생성 성공, CloudAnchor ID = {cloudAnchor.cloudAnchorId}";
-            // 앵커ID 저장
-            strCloudAnchorId = cloudAnchor.cloudAnchorId;
-
-            // 클라우드 앵커 ID를 공유하는 로직
-            // 포톤 네트워크 : RPC 호출
-            // 파이어베이스 : 데이터 저장
-            PlayerPrefs.SetString(cloudAnchorKey, strCloudAnchorId);
-
-            // 초기화
-            cloudAnchor = null;
-            // 기존에 증강된 객체를 삭제
-            Destroy(anchorGameObject);
-
-            mode = Mode.READY;
-        }
-        else
-        {
-            mappingText = $"클라우드 앵커 생성 진행중...{cloudAnchor.cloudAnchorState}";
-        }
-
-        messageText.text = mappingText;
-    }*/
 
     void Resolving()
     {
@@ -250,6 +208,12 @@ public class CloudAnchorManager : MonoBehaviour
     // 클라우드 앵커 리졸빙
     public void ResolveCloudAnchor()
     {
+        if (isResolving)
+        {
+            Debug.LogWarning("이미 리졸빙 작업이 진행 중입니다.");
+            return;
+        }
+        
         // anchorManager가 null인지 확인
         if (anchorManager == null)
         {
@@ -280,6 +244,16 @@ public class CloudAnchorManager : MonoBehaviour
 
     private IEnumerator ResolveCloudAnchorCoroutine(ResolveCloudAnchorPromise promise)
     {
+        // 중복 호출 방지
+        if (isResolving)
+        {
+            Debug.LogWarning("이미 리졸빙 작업이 진행 중입니다.");
+            yield break;
+        }
+
+        isResolving = true; // 리졸빙 시작
+        Debug.Log("클라우드 앵커 리졸빙 시작");
+
         float checkInterval = 1f; // 1초 간격으로 상태 확인
         float timeout = 30f; // 최대 30초 대기
         float elapsedTime = 0f;
@@ -295,6 +269,7 @@ public class CloudAnchorManager : MonoBehaviour
         {
             Debug.LogError("클라우드 앵커 리졸빙 타임아웃");
             mode = Mode.READY;
+            isResolving = false; // 작업 종료 플래그 해제
             yield break;
         }
 
@@ -322,24 +297,9 @@ public class CloudAnchorManager : MonoBehaviour
             Debug.LogError($"클라우드 앵커 리졸빙 실패: {result.CloudAnchorState}");
             
         }
+        isResolving = false; // 작업 종료 플래그 해제
         mode = Mode.READY;
     }
-
-    /*void ResolvePending()
-    {
-        if (cloudAnchor.cloudAnchorState == CloudAnchorState.Success)
-        {
-            messageText.text = "리졸브 성공";
-
-            // 객체 증강
-            anchorGameObject = Instantiate(anchorPrefab, cloudAnchor.transform);
-            mode = Mode.READY;
-        }
-        else
-        {
-            messageText.text = $"리졸빙 진행 중...{cloudAnchor.cloudAnchorState}";
-        }
-    }*/
 
 
     // MainCamera 태그로 지정된 카메라의 위치와 각도를 Pose 데이터 타입으로 반환
