@@ -52,6 +52,49 @@ public class CloudAnchorManager : MonoBehaviour
 
     private bool isResolving = false; // 리졸빙 중 여부를 추적
 
+    private List<string> cloudAnchorIds = new List<string>(); // Cloud Anchor ID 리스트
+    private const string cloudAnchorListKey = "CLOUD_ANCHOR_IDS";
+
+    // Cloud Anchor ID 저장
+    private void SaveCloudAnchorId(string id)
+    {
+        // 기존 ID 로드
+        LoadCloudAnchorIds();
+
+        // 새 ID 추가
+        if (!cloudAnchorIds.Contains(id))
+        {
+            cloudAnchorIds.Add(id);
+        }
+
+        string json = JsonUtility.ToJson(new SerializableList<string>(cloudAnchorIds));
+        PlayerPrefs.SetString(cloudAnchorListKey, json);
+        PlayerPrefs.Save();
+        Debug.Log($"Cloud Anchor ID 저장 완료: {id}");
+    }
+
+    // Cloud Anchor ID 불러오기
+    private void LoadCloudAnchorIds()
+    {
+        if (PlayerPrefs.HasKey(cloudAnchorListKey))
+        {
+            string json = PlayerPrefs.GetString(cloudAnchorListKey);
+            Debug.Log($"로드된 JSON 데이터: {json}");
+
+            cloudAnchorIds = JsonUtility.FromJson<SerializableList<string>>(json).ToList();
+        }
+        else
+        {
+            cloudAnchorIds = new List<string>();
+        }
+
+        Debug.Log($"로드된 Cloud Anchor ID 개수: {cloudAnchorIds.Count}");
+        foreach (var id in cloudAnchorIds)
+        {
+            Debug.Log($"로드된 ID: {id}");
+        }
+    }
+
     void Start()
     {
         // 버튼 이벤트 연결
@@ -75,7 +118,7 @@ public class CloudAnchorManager : MonoBehaviour
         }*/
         if (mode == Mode.RESOLVE)
         {
-            Resolving();
+            ResolveAllCloudAnchors();
         }
         /*if (mode == Mode.RESOLVE_PENDING)
         {
@@ -109,6 +152,9 @@ public class CloudAnchorManager : MonoBehaviour
                 mode = Mode.HOST_PENDING; // 중복 터치 방지
             }
         }
+        else{
+            Debug.Log("로컬 앵커가 이미 있음");
+        }
     }
 
     private void HostCloudAnchor()
@@ -141,8 +187,10 @@ public class CloudAnchorManager : MonoBehaviour
             Debug.Log($"클라우드 앵커 생성 성공: ID = {strCloudAnchorId}");
 
             // ID 저장 (예: PlayerPrefs 사용)
-            PlayerPrefs.SetString("CLOUD_ANCHOR_ID", strCloudAnchorId);
-            PlayerPrefs.Save(); // 강제 저장
+            /*PlayerPrefs.SetString("CLOUD_ANCHOR_ID", strCloudAnchorId);
+            PlayerPrefs.Save(); // 강제 저장*/
+            // ID 리스트에 추가 및 저장
+            SaveCloudAnchorId(strCloudAnchorId);
 
             // 초기화
             //cloudAnchor = null;
@@ -175,7 +223,88 @@ public class CloudAnchorManager : MonoBehaviour
     }
 
 
-    void Resolving()
+    public void ResolveAllCloudAnchors()
+    {
+        if (isResolving)
+        {
+            //Debug.LogWarning("리졸빙 작업이 이미 진행 중입니다.");
+            return;
+        }
+
+        LoadCloudAnchorIds();
+
+        if (cloudAnchorIds.Count == 0)
+        {
+            Debug.LogError("저장된 Cloud Anchor ID가 없습니다.");
+            return;
+        }
+
+        Debug.Log($"총 {cloudAnchorIds.Count}개의 Cloud Anchor를 리졸빙 시작합니다.");
+        //mode = Mode.RESOLVE_PENDING;
+        StartCoroutine(ResolveAllCloudAnchorsCoroutine());
+    }
+
+    private IEnumerator ResolveAllCloudAnchorsCoroutine()
+    {
+        isResolving = true;
+
+        foreach (string cloudAnchorId in cloudAnchorIds)
+        {
+            Debug.Log($"클라우드 앵커 리졸빙 시작: ID = {cloudAnchorId}");
+            ResolveCloudAnchorPromise promise = anchorManager.ResolveCloudAnchorAsync(cloudAnchorId);
+
+            if (promise == null)
+            {
+                Debug.LogError($"클라우드 앵커 리졸빙 요청 실패: ID = {cloudAnchorId}");
+                continue;
+            }
+
+            float timeout = 30f;
+            float elapsedTime = 0f;
+            while (promise.State == PromiseState.Pending && elapsedTime < timeout)
+            {
+                yield return new WaitForSeconds(1f);
+                elapsedTime += 1f;
+            }
+
+            // 리졸빙 결과 확인
+            if (promise.State == PromiseState.Pending)
+            {
+                Debug.LogError($"클라우드 앵커 리졸빙 타임아웃: ID = {cloudAnchorId}");
+                continue;
+            }
+
+            ResolveCloudAnchorResult result = promise.Result;
+
+            if (result.CloudAnchorState == CloudAnchorState.Success)
+            {
+                Debug.Log($"클라우드 앵커 리졸빙 성공: ID = {cloudAnchorId}");
+                var resolvedAnchor = result.Anchor;
+                if (resolvedAnchor != null)
+                {
+                    Instantiate(anchorPrefab, resolvedAnchor.transform.position, resolvedAnchor.transform.rotation);
+                    Debug.Log($"증강 오브젝트 생성 완료: ID = {cloudAnchorId}");
+                }
+                else
+                {
+                    Debug.LogError($"리졸빙된 앵커가 null입니다: ID = {cloudAnchorId}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"클라우드 앵커 리졸빙 실패: ID = {cloudAnchorId}, 상태: {result.CloudAnchorState}");
+            }
+        }
+
+        Debug.Log("모든 클라우드 앵커 리졸빙 작업 완료");
+        isResolving = false;
+        mode = Mode.READY;
+    }
+
+
+
+
+    /*void Resolving()
     {
         // 중복 호출 방지
         if (mode != Mode.RESOLVE) return;
@@ -213,7 +342,7 @@ public class CloudAnchorManager : MonoBehaviour
             Debug.LogWarning("이미 리졸빙 작업이 진행 중입니다.");
             return;
         }
-        
+
         // anchorManager가 null인지 확인
         if (anchorManager == null)
         {
@@ -299,7 +428,7 @@ public class CloudAnchorManager : MonoBehaviour
         }
         isResolving = false; // 작업 종료 플래그 해제
         mode = Mode.READY;
-    }
+    }*/
 
 
     // MainCamera 태그로 지정된 카메라의 위치와 각도를 Pose 데이터 타입으로 반환
@@ -327,7 +456,7 @@ public class CloudAnchorManager : MonoBehaviour
         if (mode == Mode.READY)
         {
             mode = Mode.RESOLVE; // 상태 변경
-            Debug.Log("Resolving 시작");
+            Debug.Log("모든 Cloud Anchor 리졸빙 시작");
         }
         else
         {
@@ -361,8 +490,31 @@ public class CloudAnchorManager : MonoBehaviour
             anchorGameObject = null; // Null로 설정하여 이후 호출 방지
         }
 
+        // 저장된 Cloud Anchor ID 삭제
+        PlayerPrefs.DeleteKey(cloudAnchorListKey); // 저장된 ID 삭제
+        PlayerPrefs.Save(); // 변경 사항 저장
+        cloudAnchorIds.Clear(); // 메모리 내 리스트도 초기화
+        Debug.Log("저장된 Cloud Anchor ID가 모두 삭제되었습니다.");
+
         // 상태 초기화
         Debug.Log("Reset 완료");
         mode = Mode.READY;
+    }
+
+
+    // SerializableList 클래스 (JSON 직렬화를 위한 헬퍼)
+    [Serializable]
+    private class SerializableList<T>
+    {
+        public List<T> List;
+        public SerializableList(List<T> list)
+        {
+            List = list;
+        }
+
+        public List<T> ToList()
+        {
+            return List ?? new List<T>();
+        }
     }
 }
