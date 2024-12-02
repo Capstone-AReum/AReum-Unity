@@ -547,6 +547,7 @@ MonoBehaviour:
   curWaterImage: {fileID: 0}
   nextWaterImage: {fileID: 0}
   wateringCan: {fileID: 0}
+  target: {fileID: 0}
 --- !u!222 &805202849
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -693,7 +694,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2657502288012574604, guid: a0c3b21f10e94af4db80167d04f7e49a, type: 3}
   m_PrefabInstance: {fileID: 2657502288338474142}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1432678141}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c22dfd0ae59052640933d39e1d4b7d38, type: 3}
@@ -733,6 +734,7 @@ MonoBehaviour:
   curWaterImage: {fileID: 692058660}
   nextWaterImage: {fileID: 376861781}
   wateringCan: {fileID: 1478216577}
+  target: {fileID: 1432678141}
 --- !u!224 &1389743697
 RectTransform:
   m_ObjectHideFlags: 0
@@ -753,6 +755,11 @@ RectTransform:
   m_AnchoredPosition: {x: 720, y: 1894}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1432678141 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2657502288012574606, guid: a0c3b21f10e94af4db80167d04f7e49a, type: 3}
+  m_PrefabInstance: {fileID: 2657502288338474142}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1432678145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1273,6 +1280,7 @@ MonoBehaviour:
   curWaterImage: {fileID: 0}
   nextWaterImage: {fileID: 0}
   wateringCan: {fileID: 0}
+  target: {fileID: 0}
 --- !u!222 &1834484803
 CanvasRenderer:
   m_ObjectHideFlags: 0

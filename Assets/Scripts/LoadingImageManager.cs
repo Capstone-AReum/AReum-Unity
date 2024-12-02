@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,8 @@ public class LoadingImageManager : MonoBehaviour
     private float totalDuration = 8f; // 전체 씬의 지속 시간
     private float elapsedTime = 0f; // 총 경과 시간
     private bool isCurImageActive = true;
+
+    public GameObject target;   // SceneManager 연결할 거
 
     void Start()
     {
@@ -66,6 +69,7 @@ public class LoadingImageManager : MonoBehaviour
             nextIconImage.gameObject.SetActive(false);
             curWaterImage.gameObject.SetActive(false);
             nextWaterImage.gameObject.SetActive(false);
+            target.GetComponent<ARSceneManager>().GotoSceneSingle("Upload3");
         }
     }
 }
