@@ -5,11 +5,30 @@ using UnityEngine.SceneManagement;
 
 public class ARSceneManager : MonoBehaviour
 {
-    public void GotoMain(){
+    private string currentLoadedScene = "";
+
+    public void GotoMainSingle(){
         SceneManager.LoadScene("Main", LoadSceneMode.Single);
     }
 
-    public void GotoScene(string sceneName){
+    public void GotoSceneSingle(string sceneName){
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
+    }
+
+    public void GotoSceneAdditive(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName, LoadSceneMode.Additive);
+    }
+
+    public void ReturnToPreviousScene()
+    {
+        if (string.IsNullOrEmpty(currentLoadedScene))
+        {
+            Debug.LogWarning("추가된 씬이 없습니다.");
+            return;
+        }
+
+        SceneManager.UnloadSceneAsync(currentLoadedScene);
+        currentLoadedScene = ""; // 현재 로드된 씬 정보 초기화
     }
 }

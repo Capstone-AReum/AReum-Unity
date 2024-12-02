@@ -2669,6 +2669,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1019580499663324168, guid: 32fbb212d5849744f8c037b1bf264d14, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: Upload1
+      objectReference: {fileID: 0}
     - target: {fileID: 1019580499663324175, guid: 32fbb212d5849744f8c037b1bf264d14, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
