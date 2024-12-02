@@ -16,6 +16,7 @@ public class LoadGallery : MonoBehaviour
     public void Start()
     {
         warningText.text = "";    // 초기에는 경고 메시지 숨김
+        DisplayUploadedImages();    // 이전에 업로드된 이미지를 화면에 표시
     }
 
     public void OnClickImageLoad()
@@ -99,6 +100,19 @@ public class LoadGallery : MonoBehaviour
         // 새로운 RawImage 생성하여 부모 컨테이너에 추가
         RawImage newImage = Instantiate(imgPrefab, imageContainer);
         newImage.texture = tex;
+
+        // 싱글톤 클래스에 이미지 추가
+        ImageManager.Instance.uploadedImages.Add(tex);
+    }
+
+    // 이전에 업로드된 이미지를 화면에 표시
+    void DisplayUploadedImages()
+    {
+        foreach (Texture2D tex in ImageManager.Instance.uploadedImages)
+        {
+            RawImage newImage = Instantiate(imgPrefab, imageContainer);
+            newImage.texture = tex;
+        }
     }
 
     // 경고 메시지를 TextMeshPro를 통해 화면에 표시
