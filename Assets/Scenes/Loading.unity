@@ -203,7 +203,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 145}
+  m_SizeDelta: {x: 300, y: 183}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &376861780
 CanvasRenderer:
@@ -362,7 +362,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 6185831538fcdba4b894e08d51c26b7b, type: 3}
+  m_Texture: {fileID: 2800000, guid: 68a30fb89bd747e4dab927f4fa10b799, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -395,7 +395,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 145}
+  m_SizeDelta: {x: 300, y: 183}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &705507993
 GameObject:
@@ -576,7 +576,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: f05510003f88a4d4d8d063b2374ab18c, type: 3}
+  m_Texture: {fileID: 2800000, guid: c462ef131b6d1a94fabe472eadc34875, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -678,10 +678,10 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 200
+    m_Top: 180
     m_Bottom: 0
   m_ChildAlignment: 1
-  m_Spacing: 20
+  m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
@@ -780,7 +780,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: c8eb283b02f2ff044b5e7f1b6bf419a6, type: 3}
+  m_Texture: {fileID: 2800000, guid: cc22c5ee52a764043b46ddc58df25afb, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -824,7 +824,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 500, y: 307}
+  m_SizeDelta: {x: 500, y: 333}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1478216579
 MonoBehaviour:
@@ -846,7 +846,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: ef2f28f0090010e4da51ca3e514f77c1, type: 3}
+  m_Texture: {fileID: 2800000, guid: e78d0ddac1c3d704d92213247ad95da3, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -1072,15 +1072,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uBAA8\uB378\uB9C1 \uC9C4\uD589\uC911\uC785\uB2C8\uB2E4..."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b4a1b6c916c743a45afdae52caa9baf0, type: 2}
-  m_sharedMaterial: {fileID: 5697454209648366137, guid: b4a1b6c916c743a45afdae52caa9baf0, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
+  m_sharedMaterial: {fileID: 3288674337076530842, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 3422552064
+  m_fontColor: {r: 0, g: 0, b: 0, a: 0.8}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1097,8 +1097,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 45
-  m_fontSizeBase: 45
+  m_fontSize: 55
+  m_fontSizeBase: 55
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1346,7 +1346,7 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 200
+    m_Top: 230
     m_Bottom: 0
   m_ChildAlignment: 1
   m_Spacing: 100
