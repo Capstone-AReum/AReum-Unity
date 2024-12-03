@@ -25,18 +25,18 @@ public class LoadGallery : MonoBehaviour
         // 이전에 업로드된 이미지가 있다면 Grid Layout 활성화, 없다면 비활성화
         if (ImageManager.Instance.uploadedImages.Count > 0)
         {
-            gridLayout.enabled = true;
-            cameraIcon.gameObject.SetActive(false);
-            descriptionText.gameObject.SetActive(false);
+            if (gridLayout != null) gridLayout.enabled = true;
+            if (cameraIcon != null) cameraIcon.gameObject.SetActive(false);
+            if (descriptionText != null) descriptionText.gameObject.SetActive(false);
             DisplayUploadedImages();
         }
         else
         {
             // 초기 설정: 경고 메시지 숨김, Grid Layout 비활성화, 아이콘과 설명 텍스트 표시
-            warningText.text = "";
-            gridLayout.enabled = false;
-            cameraIcon.gameObject.SetActive(true);
-            descriptionText.gameObject.SetActive(true);
+            if (warningText != null) warningText.text = "";
+            if (gridLayout != null) gridLayout.enabled = false;
+            if (cameraIcon != null) cameraIcon.gameObject.SetActive(true);
+            if (descriptionText != null) descriptionText.gameObject.SetActive(true);
         }
     }
 
