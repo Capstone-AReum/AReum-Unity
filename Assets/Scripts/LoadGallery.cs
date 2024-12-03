@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using TMPro;
+using UnityEngine.Networking;
 
 public class LoadGallery : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class LoadGallery : MonoBehaviour
     public RawImage cameraIcon; // 카메라 아이콘
     public TextMeshProUGUI descriptionText; // 설명 텍스트
     public GridLayoutGroup gridLayout; // Grid Layout Group 컴포넌트
+
+    private string uploadAlbumUrl = "http://ec2-43-200-16-231.ap-northeast-2.compute.amazonaws.com/albums/upload";
 
     public void Start()
     {
@@ -144,5 +147,50 @@ public class LoadGallery : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         warningText.text = ""; // 경고 메시지 숨김
+    }
+
+    // 폼 데이터로 이미지 전송
+    public IEnumerator SendImagesToServer(string title)
+    {
+        if (ImageManager.Instance.uploadedImages.Count == 0)
+        {
+            Debug.LogWarning("전송할 이미지가 없습니다.");
+            yield break;
+        }
+        yield return StartCoroutine(UploadImages(title)); // UploadImages 코루틴 완료까지 대기
+    }
+
+    IEnumerator UploadImages(string title)
+    {
+        // 폼 데이터 생성
+        WWWForm form = new WWWForm();
+
+        // 업로드된 이미지를 폼 데이터에 추가
+        foreach (Texture2D image in ImageManager.Instance.uploadedImages)
+        {
+            byte[] imageBytes = image.EncodeToPNG();
+            form.AddBinaryData("files", imageBytes, "image.png", "image/png");
+        }
+
+        // 서버 요청 생성
+        string queryParam = "?title=" + UnityWebRequest.EscapeURL(title);
+        string url = uploadAlbumUrl + queryParam;
+        UnityWebRequest request = UnityWebRequest.Post(url, form);
+        //request.SetRequestHeader("accept", "application/json");
+
+        Debug.Log($"Sending request to: {url}");
+
+        // 요청 전송
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            Debug.Log("이미지가 성공적으로 업로드되었습니다.");
+            Debug.Log("서버 응답: " + request.downloadHandler.text);
+        }
+        else
+        {
+            Debug.LogError("이미지 업로드 실패: " + request.error);
+        }
     }
 }
