@@ -13,19 +13,36 @@ public class LoadGallery : MonoBehaviour
     public TextMeshProUGUI warningText;  // 경고 메시지를 표시할 TextMeshPro 오브젝트
     private HashSet<string> loadedImages = new HashSet<string>(); // 업로드된 이미지 경로를 저장하는 HashSet
 
+    public RawImage cameraIcon; // 카메라 아이콘
+    public TextMeshProUGUI descriptionText; // 설명 텍스트
+    public GridLayoutGroup gridLayout; // Grid Layout Group 컴포넌트
+
     public void Start()
     {
-        warningText.text = "";    // 초기에는 경고 메시지 숨김
-        DisplayUploadedImages();    // 이전에 업로드된 이미지를 화면에 표시
+        // 이전에 업로드된 이미지가 있다면 Grid Layout 활성화, 없다면 비활성화
+        if (ImageManager.Instance.uploadedImages.Count > 0)
+        {
+            gridLayout.enabled = true;
+            cameraIcon.gameObject.SetActive(false);
+            descriptionText.gameObject.SetActive(false);
+            DisplayUploadedImages();
+        }
+        else
+        {
+            // 초기 설정: 경고 메시지 숨김, Grid Layout 비활성화, 아이콘과 설명 텍스트 표시
+            warningText.text = "";
+            gridLayout.enabled = false;
+            cameraIcon.gameObject.SetActive(true);
+            descriptionText.gameObject.SetActive(true);
+        }
     }
 
     public void OnClickImageLoad()
     {
-        /*if (imageContainer.childCount >= maxFiles)
-        {
-            ShowWarningMessage($"최대 {maxFiles}개의 파일만 업로드할 수 있습니다.");
-            return; // 추가 업로드 불가
-        }*/
+        // 사용자가 버튼을 클릭하면 Grid Layout 활성화, 카메라 아이콘과 설명 텍스트 비활성화
+        gridLayout.enabled = true;
+        cameraIcon.gameObject.SetActive(false);
+        descriptionText.gameObject.SetActive(false);
 
         NativeGallery.GetImagesFromGallery((files) =>
         {
