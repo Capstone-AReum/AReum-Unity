@@ -87,7 +87,7 @@ public class DisplayGallery : MonoBehaviour
             Debug.LogError("TextMeshPro component not found in the button prefab!");
         }
 
-        // API로 선택한 ID를 넘기는 로직 추가
+        // API로 선택한 ID를 넘기는 로직 추가 (나중에 모델 만드는 api 호출 예정)
         //StartCoroutine(SendSelectedPhotoId(photoId));
     }
 
