@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class AlbumManager : MonoBehaviour
@@ -16,6 +17,8 @@ public class AlbumManager : MonoBehaviour
     private Dictionary<int, Texture2D> photoTextures = new Dictionary<int, Texture2D>(); // ID와 Texture2D 매핑
     private int totalPhotosToLoad = 0; // 로드해야 할 이미지 수
     private int photosLoaded = 0; // 로드 완료된 이미지 수
+
+    public static int selectedPhotoId; // 선택된 사진의 ID를 저장하는 정적 변수
 
     void Start()
     {
@@ -37,7 +40,9 @@ public class AlbumManager : MonoBehaviour
         if(request.result == UnityWebRequest.Result.Success){
             string jsonResponse = request.downloadHandler.text;
             List<PhotoItem> photoItems = JsonConvert.DeserializeObject<List<PhotoItem>>(jsonResponse);
-            
+
+            totalPhotosToLoad = photoItems.Count; // 로드해야 할 이미지 수 설정
+
             foreach (var photo in photoItems)
             {
                 //Debug.Log($"ID: {photo.id}, URL: {photo.url}, Created At: {photo.created_at}");
@@ -74,9 +79,9 @@ public class AlbumManager : MonoBehaviour
                 Debug.LogError("Button component not found on imgPrefab");
                 yield break;
             }
-            //디테일 페이지로 넘어가도록 수정!!! id는 어떻게 넘겨주지
-            //button.onClick.AddListener(() => OnPhotoSelected(photo.id, button));
-            button.onClick.AddListener(()=>Debug.Log("Clicked"));
+
+            // 버튼 클릭 시 AlbumDetail Scene으로 이동하고 사진 ID 전달
+            button.onClick.AddListener(() => OnPhotoSelected(photo.id));
 
             // 이미지 로드 완료 카운트 증가
             photosLoaded++;
@@ -88,6 +93,15 @@ public class AlbumManager : MonoBehaviour
             photosLoaded++; // 실패한 경우에도 카운트 증가
             CheckLoadingComplete();
         }
+    }
+
+    void OnPhotoSelected(int photoId)
+    {
+        // 선택된 사진의 ID 저장
+        selectedPhotoId = photoId;
+
+        // AlbumDetail Scene으로 이동
+        SceneManager.LoadScene("AlbumDetail");
     }
 
     void CheckLoadingComplete()

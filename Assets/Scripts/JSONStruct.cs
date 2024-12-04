@@ -10,6 +10,15 @@ public class PhotoItem
 }
 
 [Serializable]
+public class PhotoItemDetail
+{
+    public int id;
+    public string url;
+    public string created_at;
+    public string title;
+}
+
+[Serializable]
 public class ApiResponse
 {
     public int id;
