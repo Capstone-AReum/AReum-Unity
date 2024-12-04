@@ -23,7 +23,7 @@ public class LoadGallery : MonoBehaviour
     public void Start()
     {
         // 이전에 업로드된 이미지가 있다면 Grid Layout 활성화, 없다면 비활성화
-        if (ImageManager.Instance.uploadedImages.Count > 0)
+        /*if (ImageManager.Instance.uploadedImages.Count > 0)
         {
             if (gridLayout != null) gridLayout.enabled = true;
             if (cameraIcon != null) cameraIcon.gameObject.SetActive(false);
@@ -37,7 +37,11 @@ public class LoadGallery : MonoBehaviour
             if (gridLayout != null) gridLayout.enabled = false;
             if (cameraIcon != null) cameraIcon.gameObject.SetActive(true);
             if (descriptionText != null) descriptionText.gameObject.SetActive(true);
-        }
+        }*/
+        if (warningText != null) warningText.text = "";
+        if (gridLayout != null) gridLayout.enabled = false;
+        if (cameraIcon != null) cameraIcon.gameObject.SetActive(true);
+        if (descriptionText != null) descriptionText.gameObject.SetActive(true);
     }
 
     public void OnClickImageLoad()
@@ -126,14 +130,14 @@ public class LoadGallery : MonoBehaviour
     }
 
     // 이전에 업로드된 이미지를 화면에 표시
-    void DisplayUploadedImages()
+    /*void DisplayUploadedImages()
     {
         foreach (Texture2D tex in ImageManager.Instance.uploadedImages)
         {
             RawImage newImage = Instantiate(imgPrefab, imageContainer);
             newImage.texture = tex;
         }
-    }
+    }*/
 
     // 경고 메시지를 TextMeshPro를 통해 화면에 표시
     void ShowWarningMessage(string message)
@@ -186,7 +190,16 @@ public class LoadGallery : MonoBehaviour
         if (request.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("이미지가 성공적으로 업로드되었습니다.");
-            Debug.Log("서버 응답: " + request.downloadHandler.text);
+
+            // JSON 응답 텍스트 가져오기
+            string jsonResponse = request.downloadHandler.text;
+            Debug.Log("Response JSON: " + jsonResponse);
+
+            // JSON 파싱
+            ApiResponse response = JsonUtility.FromJson<ApiResponse>(jsonResponse);
+            //Debug.Log($"Title: {response.title}, First Photo URL: {response.items[0].url}");
+            Debug.Log(response.items);
+            ImageManager.Instance.uploadedPhotos = response.items;
         }
         else
         {

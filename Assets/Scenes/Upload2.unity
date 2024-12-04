@@ -181,6 +181,9 @@ MonoBehaviour:
   imageContainer: {fileID: 1460290640}
   maxFiles: 9
   warningText: {fileID: 0}
+  cameraIcon: {fileID: 0}
+  descriptionText: {fileID: 0}
+  gridLayout: {fileID: 0}
 --- !u!114 &47857427
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -849,7 +852,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcf01e984047fb3418e3c6f1d5538919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  imgPrefab: {fileID: 8366180815824284373, guid: 89e2211f80e0a8949834cade2c2e09d3, type: 3}
+  imgPrefab: {fileID: 8366180815824284373, guid: ce257b33dd9e8dd45b8f9ffbe813db5d, type: 3}
   imageContainer: {fileID: 1460290640}
 --- !u!1 &1460290639
 GameObject:
@@ -1400,8 +1403,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1092562507}
         m_TargetAssemblyTypeName: ARSceneManager, Assembly-CSharp
-        m_MethodName: GotoSceneSingle
-        m_Mode: 5
+        m_MethodName: 
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
