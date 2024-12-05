@@ -9,16 +9,22 @@ public class DisplayGallery : MonoBehaviour
 {
     public RawImage imgPrefab;
     public Transform imageContainer;
+    public GameObject loadingPanel;
+    public static int selectedPhotoId = -1; // 현재 선택된 사진 ID
 
     private Dictionary<int, Texture2D> photoTextures = new Dictionary<int, Texture2D>(); // ID와 Texture2D 매핑
-
     private Button selectedButton = null; // 현재 선택된 버튼
-    private int selectedPhotoId = -1;    // 현재 선택된 사진 ID
+
+    private int totalPhotosToLoad = 0; // 로드해야 할 이미지 수
+    private int photosLoaded = 0; // 로드 완료된 이미지 수
 
     void Start()
     {
+        ShowLoading(true);
+
         // ImageManager에서 업로드된(=API 호출 후 실제로 DB에 업로드 된) 사진 정보 가져오기
         List<PhotoItem> uploadedPhotos = ImageManager.Instance.uploadedPhotos;
+        totalPhotosToLoad = uploadedPhotos.Count; // 로드해야 할 이미지 수 설정
 
         foreach (PhotoItem photo in uploadedPhotos)
         {
@@ -50,10 +56,16 @@ public class DisplayGallery : MonoBehaviour
                 yield break;
             }
             button.onClick.AddListener(() => OnPhotoSelected(photo.id, button));
+
+            // 이미지 로드 완료 카운트 증가
+            photosLoaded++;
+            CheckLoadingComplete();
         }
         else
         {
             Debug.LogError($"Failed to load image from {photo.url}: {request.error}");
+            photosLoaded++; // 실패한 경우에도 카운트 증가
+            CheckLoadingComplete();
         }
     }
 
@@ -108,4 +120,21 @@ public class DisplayGallery : MonoBehaviour
             Debug.LogError($"Failed to send photo ID: {request.error}");
         }
     }*/
+
+    void CheckLoadingComplete()
+    {
+        // 모든 이미지가 로드 완료된 경우
+        if (photosLoaded >= totalPhotosToLoad)
+        {
+            ShowLoading(false); // 로딩 패널 숨김
+        }
+    }
+
+    void ShowLoading(bool isLoading)
+    {
+        if (loadingPanel != null)
+        {
+            loadingPanel.SetActive(isLoading);
+        }
+    }
 }
