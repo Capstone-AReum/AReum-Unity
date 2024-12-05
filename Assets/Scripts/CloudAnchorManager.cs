@@ -9,6 +9,7 @@ using UnityEngine.XR.ARSubsystems;
 // Google ARCore Extensions
 using Google.XR.ARCoreExtensions;
 using System;
+using TMPro;
 
 public class CloudAnchorManager : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class CloudAnchorManager : MonoBehaviour
     public Button confirmButton;
 
     // 메시지 출력 텍스트
-    public Text messageText;
+    public TextMeshProUGUI messageText;
 
     // 상태변수
     public Mode mode = Mode.READY;
@@ -106,6 +107,8 @@ public class CloudAnchorManager : MonoBehaviour
         confirmButton.onClick.AddListener(() => OnConfirmClick());
 
         strCloudAnchorId = PlayerPrefs.GetString(cloudAnchorKey, "");
+
+        messageText.text = "시작";
     }
 
     void Update()
@@ -115,18 +118,10 @@ public class CloudAnchorManager : MonoBehaviour
             UpdateLocalAnchorPosition();
             //HostProcessing();
         }
-        /*if (mode == Mode.HOST_PENDING)
-        {
-            HostPending();
-        }*/
         if (mode == Mode.RESOLVE)
         {
             ResolveAllCloudAnchors();
         }
-        /*if (mode == Mode.RESOLVE_PENDING)
-        {
-            ResolvePending();
-        }*/
 
     }
 
@@ -204,7 +199,7 @@ public class CloudAnchorManager : MonoBehaviour
             Debug.LogError("클라우드 앵커 호스팅 실패");
             return;
         }
-
+        messageText.text = "클라우드 앵커 생성중";
         StartCoroutine(HostCloudAnchorCoroutine(promise));
     }
 
@@ -222,6 +217,7 @@ public class CloudAnchorManager : MonoBehaviour
         {
             strCloudAnchorId = result.CloudAnchorId;
             Debug.Log($"클라우드 앵커 생성 성공: ID = {strCloudAnchorId}");
+            messageText.text = "클라우드 앵커 생성 성공";
 
             // ID 저장 (예: PlayerPrefs 사용)
             /*PlayerPrefs.SetString("CLOUD_ANCHOR_ID", strCloudAnchorId);
@@ -239,6 +235,7 @@ public class CloudAnchorManager : MonoBehaviour
         else
         {
             Debug.LogError($"클라우드 앵커 생성 실패: {result.CloudAnchorState}");
+            messageText.text = "클라우드 앵커 생성 실패";
 
             // 에러 발생 시 모드를 READY로 초기화하여 중복 요청 방지
             mode = Mode.READY;
@@ -273,6 +270,7 @@ public class CloudAnchorManager : MonoBehaviour
         if (cloudAnchorIds.Count == 0)
         {
             Debug.LogError("저장된 Cloud Anchor ID가 없습니다.");
+            messageText.text = "저장된 클라우드 앵커가 없음";
             return;
         }
 
@@ -288,11 +286,13 @@ public class CloudAnchorManager : MonoBehaviour
         foreach (string cloudAnchorId in cloudAnchorIds)
         {
             Debug.Log($"클라우드 앵커 리졸빙 시작: ID = {cloudAnchorId}");
+            messageText.text = $"클라우드 앵커 리졸빙 시작: ID = {cloudAnchorId}";
             ResolveCloudAnchorPromise promise = anchorManager.ResolveCloudAnchorAsync(cloudAnchorId);
 
             if (promise == null)
             {
                 Debug.LogError($"클라우드 앵커 리졸빙 요청 실패: ID = {cloudAnchorId}");
+                messageText.text = $"클라우드 앵커 리졸빙 요청 실패: ID = {cloudAnchorId}";
                 continue;
             }
 
@@ -308,6 +308,7 @@ public class CloudAnchorManager : MonoBehaviour
             if (promise.State == PromiseState.Pending)
             {
                 Debug.LogError($"클라우드 앵커 리졸빙 타임아웃: ID = {cloudAnchorId}");
+                messageText.text = $"클라우드 앵커 리졸빙 타임아웃: ID = {cloudAnchorId}";
                 continue;
             }
 
@@ -316,6 +317,7 @@ public class CloudAnchorManager : MonoBehaviour
             if (result.CloudAnchorState == CloudAnchorState.Success)
             {
                 Debug.Log($"클라우드 앵커 리졸빙 성공: ID = {cloudAnchorId}");
+                messageText.text = $"클라우드 앵커 리졸빙 성공: ID = {cloudAnchorId}";
                 var resolvedAnchor = result.Anchor;
                 if (resolvedAnchor != null)
                 {
@@ -330,6 +332,7 @@ public class CloudAnchorManager : MonoBehaviour
             else
             {
                 Debug.LogError($"클라우드 앵커 리졸빙 실패: ID = {cloudAnchorId}, 상태: {result.CloudAnchorState}");
+                messageText.text = $"클라우드 앵커 리졸빙 실패: ID = {cloudAnchorId}, 상태: {result.CloudAnchorState}";
             }
         }
 
@@ -337,136 +340,6 @@ public class CloudAnchorManager : MonoBehaviour
         isResolving = false;
         mode = Mode.READY;
     }
-
-
-
-
-    /*void Resolving()
-    {
-        // 중복 호출 방지
-        if (mode != Mode.RESOLVE) return;
-
-        // cloudAnchorKey가 존재하지 않을 경우
-        if (!PlayerPrefs.HasKey(cloudAnchorKey))
-        {
-            Debug.LogError("저장된 클라우드 앵커 키가 없습니다.");
-            mode = Mode.READY; // 상태 초기화
-            return;
-        }
-        //messageText.text = "";
-
-        // 클라우드 앵커 ID 가져오기
-        strCloudAnchorId = PlayerPrefs.GetString(cloudAnchorKey, "");
-        if (string.IsNullOrEmpty(strCloudAnchorId))
-        {
-            Debug.LogError("클라우드 앵커 ID가 없습니다.");
-            mode = Mode.READY; // 상태 초기화
-            return;
-        }
-
-        // 클라우드 앵커 ID 받아옴. (포톤, 파이어베이스)
-        //strCloudAnchorId = PlayerPrefs.GetString(cloudAnchorKey); //이게 있어야 하는건가 아래 함수 안에거가 있어야 하는건가
-
-        ResolveCloudAnchor();
-        mode = Mode.RESOLVE_PENDING; // 리졸빙 진행 중으로 상태 변경
-    }
-
-    // 클라우드 앵커 리졸빙
-    public void ResolveCloudAnchor()
-    {
-        if (isResolving)
-        {
-            Debug.LogWarning("이미 리졸빙 작업이 진행 중입니다.");
-            return;
-        }
-
-        // anchorManager가 null인지 확인
-        if (anchorManager == null)
-        {
-            Debug.LogError("ARAnchorManager가 초기화되지 않았습니다.");
-            mode = Mode.READY; // 상태 초기화
-            return;
-        }
-
-        strCloudAnchorId = PlayerPrefs.GetString("CLOUD_ANCHOR_ID", "");
-        if (string.IsNullOrEmpty(strCloudAnchorId))
-        {
-            Debug.LogError("저장된 클라우드 앵커 ID가 없습니다.");
-            mode = Mode.READY; // 상태 초기화
-            return;
-        }
-
-        // ResolveCloudAnchorPromise 반환
-        ResolveCloudAnchorPromise promise = anchorManager.ResolveCloudAnchorAsync(strCloudAnchorId);
-        if (promise == null)
-        {
-            Debug.LogError("클라우드 앵커 리졸빙 요청 실패");
-            mode = Mode.READY; // 상태 초기화
-            return;
-        }
-
-        StartCoroutine(ResolveCloudAnchorCoroutine(promise));
-    }
-
-    private IEnumerator ResolveCloudAnchorCoroutine(ResolveCloudAnchorPromise promise)
-    {
-        // 중복 호출 방지
-        if (isResolving)
-        {
-            Debug.LogWarning("이미 리졸빙 작업이 진행 중입니다.");
-            yield break;
-        }
-
-        isResolving = true; // 리졸빙 시작
-        Debug.Log("클라우드 앵커 리졸빙 시작");
-
-        float checkInterval = 1f; // 1초 간격으로 상태 확인
-        float timeout = 30f; // 최대 30초 대기
-        float elapsedTime = 0f;
-
-        while (promise.State == PromiseState.Pending && elapsedTime < timeout)
-        {
-            yield return new WaitForSeconds(checkInterval);
-            elapsedTime += checkInterval;
-        }
-
-        // 리졸빙 타임아웃 처리
-        if (promise.State == PromiseState.Pending)
-        {
-            Debug.LogError("클라우드 앵커 리졸빙 타임아웃");
-            mode = Mode.READY;
-            isResolving = false; // 작업 종료 플래그 해제
-            yield break;
-        }
-
-        // 리졸빙 결과 확인
-        ResolveCloudAnchorResult result = promise.Result;
-
-        if (result.CloudAnchorState == CloudAnchorState.Success)
-        {
-            Debug.Log($"클라우드 앵커 리졸빙 성공: ID = {strCloudAnchorId}");
-
-            // 리졸빙된 앵커에서 필요한 작업 수행 (예: 오브젝트 생성)
-            var resolvedAnchor = result.Anchor;
-            if (resolvedAnchor != null)
-            {
-                anchorGameObject = Instantiate(anchorPrefab, resolvedAnchor.transform);
-                Debug.Log("증강 오브젝트 생성 완료");
-            }
-            else
-            {
-                Debug.LogError("리졸빙된 앵커가 null입니다.");
-            }
-        }
-        else
-        {
-            Debug.LogError($"클라우드 앵커 리졸빙 실패: {result.CloudAnchorState}");
-            
-        }
-        isResolving = false; // 작업 종료 플래그 해제
-        mode = Mode.READY;
-    }*/
-
 
     // MainCamera 태그로 지정된 카메라의 위치와 각도를 Pose 데이터 타입으로 반환
     public Pose GetCameraPose()
@@ -555,11 +428,13 @@ public class CloudAnchorManager : MonoBehaviour
     private IEnumerator StartHosting()
     {
         Debug.Log("클라우드 앵커 호스팅 시작");
+        messageText.text = "클라우드 앵커 생성중";
 
         HostCloudAnchorPromise promise = anchorManager.HostCloudAnchorAsync(localAnchor, 1);
         if (promise == null)
         {
             Debug.LogError("클라우드 앵커 호스팅 실패");
+            messageText.text = "클라우드 앵커 생성 실패";
             yield break;
         }
 
@@ -574,6 +449,7 @@ public class CloudAnchorManager : MonoBehaviour
         {
             strCloudAnchorId = result.CloudAnchorId;
             Debug.Log($"클라우드 앵커 생성 성공: ID = {strCloudAnchorId}");
+            messageText.text = "클라우드 앵커 생성 성공";
 
             // 클라우드 앵커 ID 저장
             SaveCloudAnchorId(strCloudAnchorId);
@@ -584,6 +460,7 @@ public class CloudAnchorManager : MonoBehaviour
         else
         {
             Debug.LogError($"클라우드 앵커 생성 실패: {result.CloudAnchorState}");
+            messageText.text = $"클라우드 앵커 생성 실패: {result.CloudAnchorState}";
             mode = Mode.READY;
             isConfirmed = false;
         }
