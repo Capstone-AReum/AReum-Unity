@@ -51,9 +51,11 @@ public class CloudAnchorManager : MonoBehaviour
     // 클라우드 앵커 ID
     private string strCloudAnchorId;
 
-
     private bool isResolving = false; // 리졸빙 중 여부를 추적
     private bool isConfirmed = false;
+    
+    private float scale = 1.0f;
+    private float angle = 0.0f;
 
     private List<string> cloudAnchorIds = new List<string>(); // Cloud Anchor ID 리스트
     private const string cloudAnchorListKey = "CLOUD_ANCHOR_IDS";
@@ -153,7 +155,38 @@ public class CloudAnchorManager : MonoBehaviour
                 Destroy(anchorGameObject);
             }
             anchorGameObject = Instantiate(anchorPrefab, localAnchor.transform);
+            
             Debug.Log("로컬 앵커 위치 업데이트 완료");
+        }
+    }
+
+    public void UpdateScale(float sliderValue)
+    {
+        scale = sliderValue;
+        Debug.Log($"Scale 슬라이더 값: {sliderValue}");
+
+        if (anchorGameObject)
+        {
+            anchorGameObject.transform.localScale = Vector3.one * scale;
+        }
+        else
+        {
+            Debug.LogError("anchorGameObject가 null입니다.");
+        }
+    }
+
+    public void UpdateRotation(float sliderValue)
+    {
+        angle = sliderValue;
+        Debug.Log($"Rotation 슬라이더 값: {sliderValue}");
+
+        if (anchorGameObject)
+        {
+            anchorGameObject.transform.localRotation = Quaternion.Euler(new Vector3(0, angle, 0));  // min=0, max=360으로 해야함
+        }
+        else
+        {
+            Debug.LogError("anchorGameObject가 null입니다.");
         }
     }
 
