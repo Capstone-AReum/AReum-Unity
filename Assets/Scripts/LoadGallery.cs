@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using System.IO;
 using TMPro;
 using UnityEngine.Networking;
+using MetadataExtractor;
+using MetadataExtractor.Formats.Exif;
 
 public class LoadGallery : MonoBehaviour
 {
@@ -109,9 +111,9 @@ public class LoadGallery : MonoBehaviour
         string filename = Path.GetFileName(path).Split('.')[0]; //확장자명 제외하기 위함
         string savePath = Application.persistentDataPath + "/Image";
 
-        if (!Directory.Exists(savePath))
+        if (!System.IO.Directory.Exists(savePath))
         {
-            Directory.CreateDirectory(savePath);
+            System.IO.Directory.CreateDirectory(savePath);
         }
 
         File.WriteAllBytes(savePath + filename + ".png", fileData);
@@ -121,12 +123,82 @@ public class LoadGallery : MonoBehaviour
         Texture2D tex = new Texture2D(0, 0);
         tex.LoadImage(temp);
 
+        // EXIF 데이터에서 회전 정보 읽기
+        int rotation = GetImageRotation(path);
+        if (rotation != 0)
+        {
+            tex = RotateTexture(tex, rotation);
+        }
+
         // 새로운 RawImage 생성하여 부모 컨테이너에 추가
         RawImage newImage = Instantiate(imgPrefab, imageContainer);
         newImage.texture = tex;
 
         // 싱글톤 클래스에 이미지 추가
         ImageManager.Instance.uploadedImages.Add(tex);
+    }
+
+    int GetImageRotation(string path)
+    {
+        try
+        {
+            var directories = ImageMetadataReader.ReadMetadata(path);
+            foreach (var directory in directories)
+            {
+                if (directory is ExifIfd0Directory exifDirectory && exifDirectory.TryGetInt32(ExifDirectoryBase.TagOrientation, out int orientation))
+                {
+                    switch (orientation)
+                    {
+                        case 1:
+                            return 0; // 회전 없음
+                        case 3:
+                            return 180; // 뒤집힌 경우
+                        case 6:
+                            return -90; // 반시계 방향 90도 회전
+                        case 8:
+                            return 90; // 시계 방향 90도 회전
+                    }
+                }
+            }
+        }
+        catch
+        {
+            Debug.LogWarning("EXIF 정보를 읽는 동안 오류 발생");
+        }
+        return 0; // 회전 필요 없음
+    }
+
+    Texture2D RotateTexture(Texture2D originalTexture, int angle)
+    {
+        Texture2D rotatedTexture = new Texture2D(originalTexture.height, originalTexture.width);
+        Color32[] originalPixels = originalTexture.GetPixels32();
+        Color32[] rotatedPixels = new Color32[originalPixels.Length];
+
+        int w = originalTexture.width;
+        int h = originalTexture.height;
+
+        for (int x = 0; x < w; x++)
+        {
+            for (int y = 0; y < h; y++)
+            {
+                if (angle == 90)
+                {
+                    rotatedPixels[x * h + (h - y - 1)] = originalPixels[y * w + x];
+                }
+                else if (angle == -90)
+                {
+                    rotatedPixels[(w - x - 1) * h + y] = originalPixels[y * w + x];
+                }
+                else if (angle == 180)
+                {
+                    rotatedPixels[(w - x - 1) * h + (h - y - 1)] = originalPixels[y * w + x];
+                }
+            }
+        }
+
+        rotatedTexture.SetPixels32(rotatedPixels);
+        rotatedTexture.Apply();
+        return rotatedTexture;
     }
 
     // 이전에 업로드된 이미지를 화면에 표시
