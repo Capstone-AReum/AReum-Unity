@@ -19,6 +19,7 @@ public class CloudAnchorManager : MonoBehaviour
     public Button hostButton;       // 클라우드 앵커 등록
     public Button resolveButton;    // 클라우드 앵커 조회
     public Button resetButton;      // 리셋
+    public Button confirmButton;
 
     // 메시지 출력 텍스트
     public Text messageText;
@@ -51,6 +52,7 @@ public class CloudAnchorManager : MonoBehaviour
 
 
     private bool isResolving = false; // 리졸빙 중 여부를 추적
+    private bool isConfirmed = false;
 
     private List<string> cloudAnchorIds = new List<string>(); // Cloud Anchor ID 리스트
     private const string cloudAnchorListKey = "CLOUD_ANCHOR_IDS";
@@ -101,15 +103,16 @@ public class CloudAnchorManager : MonoBehaviour
         hostButton.onClick.AddListener(() => OnHostClick());
         resolveButton.onClick.AddListener(() => OnResolveClick());
         resetButton.onClick.AddListener(() => OnResetClick());
+        confirmButton.onClick.AddListener(() => OnConfirmClick());
 
         strCloudAnchorId = PlayerPrefs.GetString(cloudAnchorKey, "");
     }
 
     void Update()
     {
-        if (mode == Mode.HOST)
+        if (mode == Mode.HOST && !isConfirmed)
         {
-            Hosting();
+            UpdateLocalAnchorPosition();
             //HostProcessing();
         }
         /*if (mode == Mode.HOST_PENDING)
@@ -127,6 +130,38 @@ public class CloudAnchorManager : MonoBehaviour
 
     }
 
+    private void UpdateLocalAnchorPosition()
+    {
+        if (Input.touchCount < 1) return;
+
+        Touch touch = Input.GetTouch(0);
+        if (touch.phase != TouchPhase.Began) return;
+
+        // Raycast로 터치 위치의 평면 확인
+        if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
+        {
+            var hitPose = hits[0].pose;
+
+            // 기존 로컬 앵커 제거
+            if (localAnchor != null)
+            {
+                Destroy(localAnchor.gameObject);
+                localAnchor = null;
+            }
+
+            // 새로운 로컬 앵커 생성
+            localAnchor = anchorManager.AddAnchor(hitPose);
+
+            // 기존 앵커 객체 삭제 후 새로 생성
+            if (anchorGameObject != null)
+            {
+                Destroy(anchorGameObject);
+            }
+            anchorGameObject = Instantiate(anchorPrefab, localAnchor.transform);
+            Debug.Log("로컬 앵커 위치 업데이트 완료");
+        }
+    }
+
     void Hosting()
     {
         if (Input.touchCount < 1) return;
@@ -141,8 +176,10 @@ public class CloudAnchorManager : MonoBehaviour
             // Raycast 발사
             if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
             {
+                var hitPose = hits[0].pose; // 첫번째로 충돌이 일어난 위치
+
                 // 로컬 앵커를 생성
-                localAnchor = anchorManager.AddAnchor(hits[0].pose);
+                localAnchor = anchorManager.AddAnchor(hitPose);
                 // 로컬 앵커 위치에 증강시키고 변수에 저장
                 anchorGameObject = Instantiate(anchorPrefab, localAnchor.transform);
                 Debug.Log("로컬 앵커 생성 완료");
@@ -501,6 +538,56 @@ public class CloudAnchorManager : MonoBehaviour
         mode = Mode.READY;
     }
 
+    private void OnConfirmClick()
+    {
+        if (mode == Mode.HOST && localAnchor != null)
+        {
+            isConfirmed = true;
+            Debug.Log("로컬 앵커 위치가 확정되었습니다.");
+            StartCoroutine(StartHosting());
+        }
+        else
+        {
+            Debug.LogWarning("로컬 앵커가 없거나 Hosting 상태가 아닙니다.");
+        }
+    }
+
+    private IEnumerator StartHosting()
+    {
+        Debug.Log("클라우드 앵커 호스팅 시작");
+
+        HostCloudAnchorPromise promise = anchorManager.HostCloudAnchorAsync(localAnchor, 1);
+        if (promise == null)
+        {
+            Debug.LogError("클라우드 앵커 호스팅 실패");
+            yield break;
+        }
+
+        while (promise.State == PromiseState.Pending)
+        {
+            yield return null;
+        }
+
+        HostCloudAnchorResult result = promise.Result;
+
+        if (result.CloudAnchorState == CloudAnchorState.Success)
+        {
+            strCloudAnchorId = result.CloudAnchorId;
+            Debug.Log($"클라우드 앵커 생성 성공: ID = {strCloudAnchorId}");
+
+            // 클라우드 앵커 ID 저장
+            SaveCloudAnchorId(strCloudAnchorId);
+
+            mode = Mode.READY;
+            isConfirmed = false;
+        }
+        else
+        {
+            Debug.LogError($"클라우드 앵커 생성 실패: {result.CloudAnchorState}");
+            mode = Mode.READY;
+            isConfirmed = false;
+        }
+    }
 
     // SerializableList 클래스 (JSON 직렬화를 위한 헬퍼)
     [Serializable]
