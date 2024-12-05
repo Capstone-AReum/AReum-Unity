@@ -33,11 +33,13 @@ public class AlbumManager : MonoBehaviour
         StartCoroutine(LoadAlbum(url));
     }
 
-    IEnumerator LoadAlbum(string url){
+    IEnumerator LoadAlbum(string url)
+    {
         UnityWebRequest request = UnityWebRequest.Get(url);
         yield return request.SendWebRequest();  // 응답이 올 때까지 대기
 
-        if(request.result == UnityWebRequest.Result.Success){
+        if (request.result == UnityWebRequest.Result.Success)
+        {
             string jsonResponse = request.downloadHandler.text;
             List<PhotoItem> photoItems = JsonConvert.DeserializeObject<List<PhotoItem>>(jsonResponse);
 
