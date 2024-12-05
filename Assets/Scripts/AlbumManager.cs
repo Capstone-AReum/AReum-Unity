@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -12,6 +13,7 @@ public class AlbumManager : MonoBehaviour
     public RawImage imgPrefab;
     public Transform imageContainer;
     public GameObject loadingPanel;
+    public GameObject dateGroupPrefab; // 날짜 그룹을 위한 프리팹
 
     private string getAlbumUrl = "http://ec2-43-200-16-231.ap-northeast-2.compute.amazonaws.com/albums/all";
     private Dictionary<int, Texture2D> photoTextures = new Dictionary<int, Texture2D>(); // ID와 Texture2D 매핑
@@ -45,11 +47,55 @@ public class AlbumManager : MonoBehaviour
 
             totalPhotosToLoad = photoItems.Count; // 로드해야 할 이미지 수 설정
 
-            foreach (var photo in photoItems)
+            // 날짜별로 이미지 분류
+            Dictionary<string, List<PhotoItem>> dateToImagesMap = new Dictionary<string, List<PhotoItem>>();
+            foreach (PhotoItem photoItem in photoItems)
             {
-                //Debug.Log($"ID: {photo.id}, URL: {photo.url}, Created At: {photo.created_at}");
-                StartCoroutine(LoadImage(photo));
+                string date = photoItem.created_at.Split('T')[0]; // 날짜 부분만 추출 (YYYY-MM-DD)
+                if (!dateToImagesMap.ContainsKey(date))
+                {
+                    dateToImagesMap[date] = new List<PhotoItem>();
+                }
+                dateToImagesMap[date].Add(photoItem);
             }
+
+            // 날짜별로 이미지 표시
+            foreach (var entry in dateToImagesMap)
+            {
+                // 날짜 그룹 생성
+                GameObject dateGroup = Instantiate(dateGroupPrefab, imageContainer);
+                dateGroup.transform.SetParent(imageContainer, false);
+
+                // 날짜 레이블 설정
+                TextMeshProUGUI dateText = dateGroup.GetComponentInChildren<TextMeshProUGUI>();
+                dateText.text = entry.Key;
+                dateText.fontSize = 40;
+
+                Transform gridContainer = dateGroup.transform.Find("GridContainer");
+                if (gridContainer == null)
+                {
+                    Debug.LogError("GridContainer not found in dateGroupPrefab");
+                    continue;
+                }
+
+                // 해당 날짜의 이미지들 로드
+                foreach (var photo in entry.Value)
+                {
+                    yield return StartCoroutine(LoadImage(photo, gridContainer));
+                }
+            }
+
+            // 날짜 그룹이 수직으로 정렬되도록 설정
+            VerticalLayoutGroup verticalLayout = imageContainer.GetComponent<VerticalLayoutGroup>();
+            if (verticalLayout == null)
+            {
+                verticalLayout = imageContainer.gameObject.AddComponent<VerticalLayoutGroup>();
+            }
+            verticalLayout.childControlHeight = true;
+            verticalLayout.childControlWidth = true;
+            verticalLayout.childForceExpandHeight = false;
+            verticalLayout.childForceExpandWidth = true;
+            verticalLayout.spacing = 80;
         }
         else
         {
@@ -58,7 +104,7 @@ public class AlbumManager : MonoBehaviour
         }
     }
 
-    IEnumerator LoadImage(PhotoItem photo)
+    IEnumerator LoadImage(PhotoItem photo, Transform parent)
     {
         UnityWebRequest request = UnityWebRequestTexture.GetTexture(photo.url);
         yield return request.SendWebRequest();
@@ -71,7 +117,7 @@ public class AlbumManager : MonoBehaviour
             photoTextures[photo.id] = tex;
 
             // 화면에 이미지 표시
-            RawImage newImage = Instantiate(imgPrefab, imageContainer);
+            RawImage newImage = Instantiate(imgPrefab, parent);
             newImage.texture = tex;
 
             // 클릭 이벤트 추가
@@ -122,21 +168,4 @@ public class AlbumManager : MonoBehaviour
             loadingPanel.SetActive(isLoading);
         }
     }
-
-    // foreach를 내부에 포함함
-    /*void DisplayAlbum(List<PhotoItem> photoItems)
-    {
-        // 날짜 추가
-        Dictionary<string, List<PhotoItem>> dateToImagesMap = new Dictionary<string, List<PhotoItem>>();
-
-        foreach (PhotoItem photoItem in photoItems)
-        {
-            string date = photoItem.created_at;
-            if(!dateToImagesMap.ContainsKey(date)){
-                dateToImagesMap[date] = new List<PhotoItem>();
-            }
-            dateToImagesMap[date].Add(photoItem);
-        }
-    }*/
-
 }
