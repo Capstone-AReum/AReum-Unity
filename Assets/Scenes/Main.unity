@@ -2742,7 +2742,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 728ad7fae8e460a4ba41265c7308d757, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AnchorPrefab: {fileID: 3036104838548929327, guid: db251302a9659c04e8ddec98bdd1eb36, type: 3}
+  m_AnchorPrefab: {fileID: 0}
 --- !u!1 &2016712592
 GameObject:
   m_ObjectHideFlags: 0
