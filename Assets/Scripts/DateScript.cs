@@ -15,6 +15,6 @@ public class DateScript : MonoBehaviour
     }
 
     public static string GetCurrentDate(){
-        return DateTime.Now.ToString(("MM월 dd일 dddd"));
+        return DateTime.Now.ToString(("yyyy년 MM월 dd일"));
     }
 }
