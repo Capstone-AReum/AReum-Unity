@@ -38,6 +38,17 @@ public class CloudAnchorManager : MonoBehaviour
     // 증강시킬 객체 프리팹
     public GameObject anchorPrefab;
 
+    // 말풍선 프리팹
+    [SerializeField] private Canvas uiCanvas; // 말풍선 UI가 배치될 캔버스
+    [SerializeField] private Camera arCamera; // AR 카메라
+    [SerializeField] private GameObject speechBubblePrefab; // 말풍선 프리팹
+
+    private GameObject speechBubbleInstance; // 말풍선 인스턴스
+    private GameObject targetObject; // 대상 3D 오브젝트
+    private RectTransform speechBubbleRect;
+    // 클라우드 앵커 오브젝트와 말풍선을 매핑하기 위한 Dictionary
+    private Dictionary<GameObject, GameObject> speechBubbleMap = new Dictionary<GameObject, GameObject>();
+
     // 저장 객체 변수 (삭제용)
     private GameObject anchorGameObject;
 
@@ -46,7 +57,7 @@ public class CloudAnchorManager : MonoBehaviour
 
     // 클라우드 앵커 변수
     private ARCloudAnchor cloudAnchor;
-
+    
     // Raycast Hit
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
@@ -84,6 +95,10 @@ public class CloudAnchorManager : MonoBehaviour
         if (mode == Mode.RESOLVE)
         {
             ResolveAllCloudAnchors();
+        }
+        if (targetObject != null)
+        {
+            UpdateSpeechBubblePosition();
         }
     }
 
@@ -308,6 +323,9 @@ public class CloudAnchorManager : MonoBehaviour
                         loadedObject.transform.Rotate(0, data.rotationY, 0);
 
                         Debug.Log($"GLB Object 적용 완료: {data.glbFilePath}");
+
+                        // 말풍선 생성
+                        CreateSpeechBubble(loadedObject, $"Anchor ID: {cloudAnchorId}");
                     }));
                 }
                 else
@@ -321,8 +339,87 @@ public class CloudAnchorManager : MonoBehaviour
                 messageText.text = $"클라우드 앵커 리졸빙 실패: ID = {cloudAnchorId}, 상태: {promise.Result.CloudAnchorState}";
             }
         }
+        mode = Mode.READY;
     }
 
+    public void CreateSpeechBubble(GameObject target, string message)
+    {
+        if (speechBubblePrefab == null || uiCanvas == null || arCamera == null)
+        {
+            Debug.LogError("SpeechBubbleManager: 필요한 요소가 설정되지 않았습니다.");
+            return;
+        }
+
+        // 이미 해당 타겟에 말풍선이 있으면 삭제 후 새로 생성
+        if (speechBubbleMap.ContainsKey(target))
+        {
+            Destroy(speechBubbleMap[target]);
+            speechBubbleMap.Remove(target);
+        }
+
+        // 새로운 말풍선 생성
+        GameObject bubbleInstance = Instantiate(speechBubblePrefab, uiCanvas.transform);
+        RectTransform bubbleRect = bubbleInstance.GetComponent<RectTransform>();
+
+        targetObject = target;  // 필요없을것같긴한데
+
+        // 텍스트 설정
+        var bubbleText = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
+        if (bubbleText != null)
+        {
+            bubbleText.text = message;
+        }
+
+        // 말풍선을 맵에 저장
+        speechBubbleMap[target] = bubbleInstance;
+        Debug.Log($"{bubbleText.text} 말풍선 생성됨");
+    }
+
+    private void UpdateSpeechBubblePosition()
+    {
+        RectTransform canvasRect = uiCanvas.GetComponent<RectTransform>();
+
+        foreach (var pair in speechBubbleMap)
+        {
+            GameObject target = pair.Key; // 클라우드 앵커 GLB 오브젝트
+            GameObject bubble = pair.Value; // 말풍선
+
+            if (target == null || bubble == null)
+            {
+                Debug.Log("null임");
+                continue;
+            }
+
+            RectTransform bubbleRect = bubble.GetComponent<RectTransform>();
+
+            // 3D 오브젝트의 월드 좌표를 화면 좌표로 변환
+            Vector3 screenPosition = arCamera.WorldToScreenPoint(target.transform.position);
+
+            // 화면 좌표를 UI 캔버스의 로컬 좌표로 변환
+            Vector2 uiPosition;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, arCamera, out uiPosition))
+            {
+                // 말풍선 위치 업데이트
+                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 100); // 오브젝트 위로 약간 올림
+            }
+
+            // 화면 밖으로 나가거나 AR 카메라에서 보이지 않으면 숨기기
+            /*if (screenPosition.z < 0 || !RectTransformUtility.RectangleContainsScreenPoint(canvasRect, screenPosition, arCamera))
+            {
+                bubble.SetActive(false);
+            }
+            else
+            {
+                bubble.SetActive(true);
+            }*/
+            bubble.SetActive(true);
+
+            // 말풍선을 카메라 방향으로 설정
+            Vector3 cameraForward = arCamera.transform.forward;
+            Vector3 cameraUp = arCamera.transform.up;
+            bubble.transform.rotation = Quaternion.LookRotation(cameraForward, cameraUp);
+        }
+    }
 
     private IEnumerator LoadGLBFile(string url, Action<GameObject> onLoaded)
     {
@@ -442,7 +539,14 @@ public class CloudAnchorManager : MonoBehaviour
         anchorDataMap.Clear();
         PlayerPrefs.DeleteKey("AnchorDataMap");
 
-        // 4. 상태 초기화
+        // 4. 모든 말풍선 삭제
+        foreach (var bubble in speechBubbleMap.Values)
+        {
+            Destroy(bubble);
+        }
+        speechBubbleMap.Clear();
+
+        // 5. 상태 초기화
         Debug.Log("Reset 완료: 모든 오브젝트 및 앵커 삭제");
         messageText.text = "Cloud Anchor가 모두 삭제되었습니다.";
         mode = Mode.READY;
