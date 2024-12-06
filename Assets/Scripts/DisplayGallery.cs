@@ -12,6 +12,8 @@ public class DisplayGallery : MonoBehaviour
     public GameObject loadingPanel;
     public static int selectedPhotoId = -1; // 현재 선택된 사진 ID
 
+    public Button nextButton; // 다음 버튼
+
     private Dictionary<int, Texture2D> photoTextures = new Dictionary<int, Texture2D>(); // ID와 Texture2D 매핑
     private Button selectedButton = null; // 현재 선택된 버튼
 
@@ -21,6 +23,11 @@ public class DisplayGallery : MonoBehaviour
     void Start()
     {
         ShowLoading(true);
+
+        if (nextButton != null)
+        {
+            nextButton.interactable = false;
+        }
 
         // ImageManager에서 업로드된(=API 호출 후 실제로 DB에 업로드 된) 사진 정보 가져오기
         List<PhotoItem> uploadedPhotos = ImageManager.Instance.uploadedPhotos;
@@ -71,7 +78,7 @@ public class DisplayGallery : MonoBehaviour
 
     void OnPhotoSelected(int photoId, Button button)
     {
-        Debug.Log($"Selected Photo ID: {photoId}");
+        //Debug.Log($"Selected Photo ID: {photoId}");
 
         // 이전에 선택된 버튼 초기화
         if (selectedButton != null && selectedButton != button)
@@ -99,8 +106,19 @@ public class DisplayGallery : MonoBehaviour
             Debug.LogError("TextMeshPro component not found in the button prefab!");
         }
 
+        if (nextButton != null && !nextButton.interactable)
+        {
+            nextButton.interactable = true;
+        }
+
         // API로 선택한 ID를 넘기는 로직 추가 (나중에 모델 만드는 api 호출 예정)
         //StartCoroutine(SendSelectedPhotoId(photoId));
+    }
+
+    public void OnNextButtonClicked()
+    {
+        Debug.Log($"thumbnail API 호출 할 id : {selectedPhotoId}");
+        ImageManager.Instance.ResetManager();
     }
 
     /*IEnumerator SendSelectedPhotoId(int photoId)
