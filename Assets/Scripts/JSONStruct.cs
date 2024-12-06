@@ -26,3 +26,10 @@ public class ApiResponse
     public string created_at;
     public List<PhotoItem> items;
 }
+
+[Serializable]
+public class StatDateItem
+{
+    public string date;
+    public int count;
+}

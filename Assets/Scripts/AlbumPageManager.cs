@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 public class AlbumPageManager : MonoBehaviour
 {
-    [System.Serializable]
+    /*[System.Serializable]
     public class AlbumResponse
     {
         public List<ImageData> images;
@@ -126,5 +126,5 @@ public class AlbumPageManager : MonoBehaviour
             RawImage rawImage = newImage.GetComponent<RawImage>();
             rawImage.texture = texture;
         }
-    }
+    }*/
 }
