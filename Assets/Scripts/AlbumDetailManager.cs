@@ -12,7 +12,7 @@ public class AlbumDetailManager : MonoBehaviour
     public RectTransform panel; // 사진이 표시될 부모 패널의 RectTransform
     public TMP_Text photoTitleText; // 제목 정보를 표시할 텍스트
     public TMP_Text photoDateText; // 날짜 정보를 표시할 텍스트
-    
+
     public GameObject loadingPanel;
 
     private string getPhotoDetailUrl = "http://ec2-43-200-16-231.ap-northeast-2.compute.amazonaws.com/albums";
