@@ -11,17 +11,24 @@ public class UploadManager : MonoBehaviour
     public GameObject loadingPanel;
 
     private string title;
+    private string place;
+
+    public void OnSelectPlaceButton(string buttonText)
+    {
+        place = buttonText;
+    }
 
     public void OnClickUploadBtn()
     {
         title = inputTitle.text;
         ShowLoading(true);
-        StartCoroutine(UploadAndSwitchScene(title));
+        Debug.Log($"{title}, {place}");
+        StartCoroutine(UploadAndSwitchScene(title, place));
     }
 
-    IEnumerator UploadAndSwitchScene(string title)
+    IEnumerator UploadAndSwitchScene(string title, string place)
     {
-        yield return StartCoroutine(target.GetComponent<LoadGallery>().SendImagesToServer(title));
+        yield return StartCoroutine(target.GetComponent<LoadGallery>().SendImagesToServer(title, place));
         ShowLoading(false);
         targetSceneManager.GetComponent<ARSceneManager>().GotoSceneSingle("Upload2");
     }

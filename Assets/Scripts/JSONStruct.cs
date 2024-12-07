@@ -23,6 +23,7 @@ public class ApiResponse
 {
     public int id;
     public string title;
+    public string location;
     public string created_at;
     public List<PhotoItem> items;
 }

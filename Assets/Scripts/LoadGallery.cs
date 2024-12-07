@@ -226,17 +226,17 @@ public class LoadGallery : MonoBehaviour
     }
 
     // 폼 데이터로 이미지 전송
-    public IEnumerator SendImagesToServer(string title)
+    public IEnumerator SendImagesToServer(string title, string place)
     {
         if (ImageManager.Instance.uploadedImages.Count == 0)
         {
             Debug.LogWarning("전송할 이미지가 없습니다.");
             yield break;
         }
-        yield return StartCoroutine(UploadImages(title)); // UploadImages 코루틴 완료까지 대기
+        yield return StartCoroutine(UploadImages(title, place)); // UploadImages 코루틴 완료까지 대기
     }
 
-    IEnumerator UploadImages(string title)
+    IEnumerator UploadImages(string title, string place)
     {
         // 폼 데이터 생성
         WWWForm form = new WWWForm();
@@ -249,7 +249,7 @@ public class LoadGallery : MonoBehaviour
         }
 
         // 서버 요청 생성
-        string queryParam = "?title=" + UnityWebRequest.EscapeURL(title);
+        string queryParam = "?title=" + UnityWebRequest.EscapeURL(title) + "&location=" + UnityWebRequest.EscapeURL(place);
         string url = uploadAlbumUrl + queryParam;
         UnityWebRequest request = UnityWebRequest.Post(url, form);
         //request.SetRequestHeader("accept", "application/json");
