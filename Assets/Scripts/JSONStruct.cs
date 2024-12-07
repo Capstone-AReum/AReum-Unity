@@ -34,3 +34,10 @@ public class StatDateItem
     public string date;
     public int count;
 }
+
+[Serializable]
+public class ThumbnailsItem
+{
+    public int id;
+    public string file_url;
+}

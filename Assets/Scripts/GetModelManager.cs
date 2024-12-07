@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Siccity.GLTFUtility;
 using TMPro;
 using UnityEngine;
@@ -22,9 +23,9 @@ public class GetModelManager : MonoBehaviour
         popupPanel.SetActive(false);
 
         Debug.Log("SF3D API 호출 시작");
-        glbUrl = "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/o_yHzLt5ATvVzbvXDG3yNw.glb";
-        SceneManager.LoadScene("Upload3");
-        //StartCoroutine(SendModelRequest());
+        //glbUrl = "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/o_yHzLt5ATvVzbvXDG3yNw.glb";
+        //SceneManager.LoadScene("Upload3");
+        StartCoroutine(SendModelRequest());
     }
 
     IEnumerator SendModelRequest()
@@ -39,7 +40,11 @@ public class GetModelManager : MonoBehaviour
         if (request.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("API 요청 성공!");
-            glbUrl = request.downloadHandler.text; // GLB URL 저장
+            
+            string jsonResponse = request.downloadHandler.text;
+            ThumbnailsItem thumbnailsItem = JsonConvert.DeserializeObject<ThumbnailsItem>(jsonResponse);
+            glbUrl = thumbnailsItem.file_url; // GLB URL 저장
+            
             Debug.Log("GLB 파일 URL: " + glbUrl);
 
             // "Upload3" 씬으로 전환
