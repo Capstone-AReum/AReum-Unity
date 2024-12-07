@@ -865,7 +865,7 @@ GameObject:
   - component: {fileID: 657424060}
   - component: {fileID: 657424059}
   m_Layer: 5
-  m_Name: SlidersPanel (1)
+  m_Name: SlidersPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2972,7 +2972,7 @@ GameObject:
   - component: {fileID: 2146920206}
   - component: {fileID: 2146920205}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: TempPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3128,6 +3128,10 @@ PrefabInstance:
       value: UI
       objectReference: {fileID: 0}
     - target: {fileID: 1019580498528292581, guid: 32fbb212d5849744f8c037b1bf264d14, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1019580498799039899, guid: 32fbb212d5849744f8c037b1bf264d14, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}

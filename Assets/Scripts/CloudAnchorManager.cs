@@ -538,6 +538,7 @@ public class CloudAnchorManager : MonoBehaviour
         // 3. AnchorDataMap 초기화 및 PlayerPrefs 삭제
         anchorDataMap.Clear();
         PlayerPrefs.DeleteKey("AnchorDataMap");
+        PlayerPrefs.Save();
 
         // 4. 모든 말풍선 삭제
         foreach (var bubble in speechBubbleMap.Values)
