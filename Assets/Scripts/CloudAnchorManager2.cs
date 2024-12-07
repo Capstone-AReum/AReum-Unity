@@ -12,6 +12,7 @@ using UnityEngine.Networking;
 using Siccity.GLTFUtility;
 using UnityEngine.EventSystems;
 
+// Upload3 Scene에서 Host, Confirm 시 사용
 public class CloudAnchorManager2 : MonoBehaviour
 {
     // 상태 변수
@@ -198,7 +199,7 @@ public class CloudAnchorManager2 : MonoBehaviour
             popupText.text = "클라우드 앵커를 생성하였습니다.";
             okButton.gameObject.SetActive(true);
 
-            SaveAnchorData(cloudAnchorId, scale, angle, glbFileUrl);
+            SaveAnchorData(cloudAnchorId, scale, angle, glbFileUrl, DisplayGallery.selectedPhotoId);
 
             mode = Mode.READY;
             isConfirmed = false;
@@ -288,9 +289,9 @@ public class CloudAnchorManager2 : MonoBehaviour
         }
     }
 
-    private void SaveAnchorData(string cloudAnchorId, float scale, float rotationY, string glbFilePath)
+    private void SaveAnchorData(string cloudAnchorId, float scale, float rotationY, string glbFilePath, int sourceId)
     {
-        AnchorData data = new AnchorData(scale, rotationY, glbFilePath);
+        AnchorData data = new AnchorData(scale, rotationY, glbFilePath, sourceId);
         anchorDataMap[cloudAnchorId] = data;
 
         // SerializableDictionary로 변환

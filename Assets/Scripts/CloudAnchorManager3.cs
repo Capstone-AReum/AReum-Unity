@@ -12,16 +12,15 @@ using UnityEngine.Networking;
 using Siccity.GLTFUtility;
 using UnityEngine.EventSystems;
 
-public class CloudAnchorManager : MonoBehaviour
+// Main Scene에서 Resolve, (Reset) 시 사용
+public class CloudAnchorManager3 : MonoBehaviour
 {
     // 상태 변수
     public enum Mode { READY, HOST, HOST_PENDING, RESOLVE, RESOLVE_PENDING };
 
     // 버튼
-    public Button hostButton;
     public Button resolveButton;
     public Button resetButton;
-    public Button confirmButton;
 
     // 메시지 출력 텍스트
     public TextMeshProUGUI messageText;
@@ -73,11 +72,8 @@ public class CloudAnchorManager : MonoBehaviour
 
     void Start()
     {
-        // 버튼 이벤트 연결
-        hostButton.onClick.AddListener(OnHostClick);
         resolveButton.onClick.AddListener(OnResolveClick);
         resetButton.onClick.AddListener(OnResetClick);
-        confirmButton.onClick.AddListener(OnConfirmClick);
 
         // AnchorData 로드
         LoadAnchorData();
@@ -86,12 +82,6 @@ public class CloudAnchorManager : MonoBehaviour
 
     void Update()
     {
-        if (mode == Mode.HOST && !isConfirmed)
-        {
-            string glbFileUrl = "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/Dv9_fHKTiCK8Cs4I9ndVAA.glb";
-            UpdateLocalAnchorPosition(glbFileUrl);
-        }
-
         if (mode == Mode.RESOLVE)
         {
             ResolveAllCloudAnchors();
@@ -99,139 +89,6 @@ public class CloudAnchorManager : MonoBehaviour
         if (targetObject != null)
         {
             UpdateSpeechBubblePosition();
-        }
-    }
-
-    private void UpdateLocalAnchorPosition(string glbFileUrl)
-    {
-        if (Input.touchCount < 1) return;
-
-        Touch touch = Input.GetTouch(0);
-        Vector2 touchPosition = touch.position;
-        if (touch.phase != TouchPhase.Began) return;
-
-        // 터치가 다른 UI 컴포넌트에서 일어났는지 확인
-        if (isPointOverUIObject(touchPosition))
-        {
-            return;
-        }
-
-        // Raycast로 터치 위치의 평면 확인
-        if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
-        {
-            var hitPose = hits[0].pose;
-
-            // 기존 로컬 앵커 제거
-            if (localAnchor != null)
-            {
-                Destroy(localAnchor.gameObject);
-                localAnchor = null;
-            }
-
-            // 새로운 로컬 앵커 생성
-            localAnchor = anchorManager.AddAnchor(hitPose);
-
-            // 기존 앵커 객체 삭제 후 새로 생성
-            if (anchorGameObject != null)
-            {
-                Destroy(anchorGameObject);
-            }
-
-            // GLB 파일 로드 및 설정
-            StartCoroutine(LoadGLBFile(glbFileUrl, (loadedObject) =>
-            {
-                anchorGameObject = loadedObject;
-                anchorGameObject.transform.SetParent(localAnchor.transform, false);
-                Debug.Log("로컬 앵커와 GLB Object 생성 완료");
-            }));
-        }
-    }
-
-    public void UpdateScale(float sliderValue)
-    {
-        scale = sliderValue;
-
-        if (anchorGameObject)
-        {
-            anchorGameObject.transform.localScale = Vector3.one * scale;
-        }
-    }
-
-    public void UpdateRotation(float sliderValue)
-    {
-        angle = sliderValue;
-
-        if (anchorGameObject)
-        {
-            anchorGameObject.transform.localRotation = Quaternion.Euler(0, angle, 0);
-        }
-    }
-
-    private void OnHostClick()
-    {
-        if (mode == Mode.READY)
-        {
-            mode = Mode.HOST;
-            Debug.LogWarning("호스팅 시작");
-            messageText.text = "원하는 위치에 배치해주세요.";
-        }
-        else
-        {
-            Debug.LogWarning("현재 호스팅을 시작할 수 없는 상태입니다.");
-        }
-    }
-
-    private void OnConfirmClick()
-    {
-        if (mode == Mode.HOST && localAnchor != null)
-        {
-            isConfirmed = true;
-            Debug.Log("로컬 앵커 위치가 확정되었습니다.");
-            StartCoroutine(StartHosting());
-        }
-        else
-        {
-            Debug.LogWarning("로컬 앵커가 없거나 Hosting 상태가 아닙니다.");
-        }
-    }
-
-    private IEnumerator StartHosting()
-    {
-        messageText.text = "클라우드 앵커 생성중";
-
-        HostCloudAnchorPromise promise = anchorManager.HostCloudAnchorAsync(localAnchor, 1);
-        if (promise == null)
-        {
-            Debug.LogError("클라우드 앵커 호스팅 실패");
-            messageText.text = "클라우드 앵커 생성 실패";
-            yield break;
-        }
-
-        while (promise.State == PromiseState.Pending)
-        {
-            yield return null;
-        }
-
-        HostCloudAnchorResult result = promise.Result;
-
-        if (result.CloudAnchorState == CloudAnchorState.Success)
-        {
-            string cloudAnchorId = result.CloudAnchorId;
-
-            Debug.Log($"클라우드 앵커 생성 성공: ID = {cloudAnchorId}");
-            messageText.text = "클라우드 앵커 생성 성공";
-            ////////////////
-            //SaveAnchorData(cloudAnchorId, scale, angle, "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/Dv9_fHKTiCK8Cs4I9ndVAA.glb");
-            ///////////////
-            mode = Mode.READY;
-            isConfirmed = false;
-        }
-        else
-        {
-            Debug.LogError($"클라우드 앵커 생성 실패: {result.CloudAnchorState}");
-            messageText.text = $"클라우드 앵커 생성 실패: {result.CloudAnchorState}";
-            mode = Mode.READY;
-            isConfirmed = false;
         }
     }
 
@@ -400,7 +257,7 @@ public class CloudAnchorManager : MonoBehaviour
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, arCamera, out uiPosition))
             {
                 // 말풍선 위치 업데이트
-                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 100); // 오브젝트 위로 약간 올림
+                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 150); // 오브젝트 위로 약간 올림
             }
 
             // 화면 밖으로 나가거나 AR 카메라에서 보이지 않으면 숨기기
@@ -476,23 +333,6 @@ public class CloudAnchorManager : MonoBehaviour
         }
     }
 
-    private void SaveAnchorData(string cloudAnchorId, float scale, float rotationY, string glbFilePath, int sourceId)
-    {
-        AnchorData data = new AnchorData(scale, rotationY, glbFilePath, sourceId);
-        anchorDataMap[cloudAnchorId] = data;
-
-        // SerializableDictionary로 변환
-        SerializableDictionary<string, AnchorData> serializableData = new SerializableDictionary<string, AnchorData>();
-        serializableData.FromDictionary(anchorDataMap);
-
-        // JSON 직렬화 후 저장
-        string json = JsonUtility.ToJson(serializableData);
-        PlayerPrefs.SetString("AnchorDataMap", json);
-        PlayerPrefs.Save();
-
-        Debug.Log($"AnchorData 저장 완료: ID={cloudAnchorId}, Scale={scale}, RotationY={rotationY}, GLB Path={glbFilePath}, sourceId={sourceId}");
-    }
-
     private void LoadAnchorData()
     {
         if (PlayerPrefs.HasKey("AnchorDataMap"))
@@ -562,61 +402,5 @@ public class CloudAnchorManager : MonoBehaviour
         List<RaycastResult> results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(eventDataCurPosition, results);
         return results.Count > 0;
-    }
-}
-
-[Serializable]
-public class AnchorData
-{
-    public float scale;
-    public float rotationY;
-    public string glbFilePath;
-    public int sourceId;
-
-    public AnchorData(float scale, float rotationY, string glbFilePath, int sourceId)
-    {
-        this.scale = scale;
-        this.rotationY = rotationY;
-        this.glbFilePath = glbFilePath;
-        this.sourceId = sourceId;
-    }
-}
-
-[Serializable]
-public class SerializableDictionary<TKey, TValue> : ISerializationCallbackReceiver
-{
-    [SerializeField] private List<TKey> keys = new List<TKey>();
-    [SerializeField] private List<TValue> values = new List<TValue>();
-
-    private Dictionary<TKey, TValue> dictionary = new Dictionary<TKey, TValue>();
-
-    public void OnBeforeSerialize()
-    {
-        keys.Clear();
-        values.Clear();
-        foreach (var pair in dictionary)
-        {
-            keys.Add(pair.Key);
-            values.Add(pair.Value);
-        }
-    }
-
-    public void OnAfterDeserialize()
-    {
-        dictionary.Clear();
-        for (int i = 0; i < keys.Count; i++)
-        {
-            dictionary[keys[i]] = values[i];
-        }
-    }
-
-    public Dictionary<TKey, TValue> ToDictionary()
-    {
-        return new Dictionary<TKey, TValue>(dictionary);
-    }
-
-    public void FromDictionary(Dictionary<TKey, TValue> source)
-    {
-        dictionary = new Dictionary<TKey, TValue>(source);
     }
 }
