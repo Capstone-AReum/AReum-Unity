@@ -20,7 +20,7 @@ public class CloudAnchorManager3 : MonoBehaviour
 
     // 버튼
     public Button resolveButton;
-    public Button resetButton;
+    //public Button resetButton;
 
     // 메시지 출력 텍스트
     public TextMeshProUGUI messageText;
@@ -61,7 +61,6 @@ public class CloudAnchorManager3 : MonoBehaviour
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
     private bool isResolving = false;
-    private bool isConfirmed = false;
 
     // Cloud Anchor 데이터 관리용
     private Dictionary<string, AnchorData> anchorDataMap = new Dictionary<string, AnchorData>();
@@ -73,7 +72,7 @@ public class CloudAnchorManager3 : MonoBehaviour
     void Start()
     {
         resolveButton.onClick.AddListener(OnResolveClick);
-        resetButton.onClick.AddListener(OnResetClick);
+        //resetButton.onClick.AddListener(OnResetClick);
 
         // AnchorData 로드
         LoadAnchorData();
@@ -92,7 +91,7 @@ public class CloudAnchorManager3 : MonoBehaviour
         }
     }
 
-    private void OnResolveClick()
+    public void OnResolveClick()
     {
         if (mode == Mode.READY)
         {
@@ -353,7 +352,7 @@ public class CloudAnchorManager3 : MonoBehaviour
         }
     }
 
-    private void OnResetClick()
+    public void OnResetClick()
     {
         // 1. 모든 GLB 오브젝트와 로컬 앵커 삭제
         if (anchorGameObject != null)
