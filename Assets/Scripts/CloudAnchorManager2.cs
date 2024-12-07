@@ -35,6 +35,8 @@ public class CloudAnchorManager2 : MonoBehaviour
     // ArRaycastManager
     public ARRaycastManager raycastManager;
 
+    private string glbFileUrl;  // glb 파일의 url
+
     // 저장 객체 변수 (삭제용)
     private GameObject anchorGameObject;
 
@@ -52,8 +54,6 @@ public class CloudAnchorManager2 : MonoBehaviour
     // 현재 변환 정보
     private float scale = 0.5f;
     private float angle = 0.0f;
-
-    private bool isModelingDone = false; // 3D 모델링 완료 여부 체크용
 
     void Start()
     {
@@ -73,7 +73,8 @@ public class CloudAnchorManager2 : MonoBehaviour
     {
         if (mode == Mode.HOST && !isConfirmed)
         {
-            string glbFileUrl = "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/Dv9_fHKTiCK8Cs4I9ndVAA.glb";
+            //string glbFileUrl = "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/Dv9_fHKTiCK8Cs4I9ndVAA.glb";
+            glbFileUrl = GetModelManager.glbUrl;
             UpdateLocalAnchorPosition(glbFileUrl);
         }
     }
@@ -197,7 +198,7 @@ public class CloudAnchorManager2 : MonoBehaviour
             popupText.text = "클라우드 앵커를 생성하였습니다.";
             okButton.gameObject.SetActive(true);
 
-            SaveAnchorData(cloudAnchorId, scale, angle, "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/Dv9_fHKTiCK8Cs4I9ndVAA.glb");
+            SaveAnchorData(cloudAnchorId, scale, angle, glbFileUrl);
 
             mode = Mode.READY;
             isConfirmed = false;

@@ -13,7 +13,7 @@ public class LoadingImageManager : MonoBehaviour
     public RawImage nextWaterImage;
     public GameObject wateringCan; // 물뿌리개 이미지 오브젝트
     private float duration = 0.5f; // 각 이미지가 표시되는 시간
-    private float totalDuration = 8f; // 전체 씬의 지속 시간
+    private float totalDuration = 20f; // 전체 씬의 지속 시간
     private float elapsedTime = 0f; // 총 경과 시간
     private bool isCurImageActive = true;
 
