@@ -41,3 +41,10 @@ public class ThumbnailsItem
     public int id;
     public string file_url;
 }
+
+[System.Serializable]
+public class StatPlaceItem
+{
+    public string location;
+    public float count;
+}
