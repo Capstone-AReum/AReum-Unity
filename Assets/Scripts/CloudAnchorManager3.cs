@@ -11,8 +11,9 @@ using Google.XR.ARCoreExtensions;
 using UnityEngine.Networking;
 using Siccity.GLTFUtility;
 using UnityEngine.EventSystems;
+using Newtonsoft.Json;
 
-// Main Scene에서 Resolve, (Reset) 시 사용
+// Main Scene에서 Resolve 시 사용
 public class CloudAnchorManager3 : MonoBehaviour
 {
     // 상태 변수
@@ -56,7 +57,7 @@ public class CloudAnchorManager3 : MonoBehaviour
 
     // 클라우드 앵커 변수
     private ARCloudAnchor cloudAnchor;
-    
+
     // Raycast Hit
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
@@ -85,7 +86,7 @@ public class CloudAnchorManager3 : MonoBehaviour
         {
             ResolveAllCloudAnchors();
         }
-        if (targetObject != null)
+        if (mode == Mode.READY)
         {
             UpdateSpeechBubblePosition();
         }
@@ -181,7 +182,7 @@ public class CloudAnchorManager3 : MonoBehaviour
                         Debug.Log($"GLB Object 적용 완료: {data.glbFilePath}");
 
                         // 말풍선 생성
-                        CreateSpeechBubble(loadedObject, $"Photo ID: {data.sourceId}");
+                        CreateSpeechBubble(loadedObject, data.sourceId);
                     }));
                 }
                 else
@@ -198,7 +199,7 @@ public class CloudAnchorManager3 : MonoBehaviour
         mode = Mode.READY;
     }
 
-    public void CreateSpeechBubble(GameObject target, string message)
+    public void CreateSpeechBubble(GameObject target, int sourceId)
     {
         if (speechBubblePrefab == null || uiCanvas == null || arCamera == null)
         {
@@ -206,43 +207,60 @@ public class CloudAnchorManager3 : MonoBehaviour
             return;
         }
 
-        // 이미 해당 타겟에 말풍선이 있으면 삭제 후 새로 생성
-        if (speechBubbleMap.ContainsKey(target))
-        {
-            Destroy(speechBubbleMap[target]);
-            speechBubbleMap.Remove(target);
-        }
+        string getPhotoDetailUrl = "http://ec2-43-200-16-231.ap-northeast-2.compute.amazonaws.com/albums";
+        string url = $"{getPhotoDetailUrl}/{sourceId}/details";
 
-        // 새로운 말풍선 생성
+        StartCoroutine(LoadPhotoDetails(target, url));
+    }
+
+    IEnumerator LoadPhotoDetails(GameObject target, string url)
+    {
+        // 말풍선 새로 생성
         GameObject bubbleInstance = Instantiate(speechBubblePrefab, uiCanvas.transform);
-        RectTransform bubbleRect = bubbleInstance.GetComponent<RectTransform>();
-
-        targetObject = target;  // 필요없을것같긴한데
-
-        // 텍스트 설정
         var bubbleText = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
-        if (bubbleText != null)
-        {
-            bubbleText.text = message;
-        }
 
-        // 말풍선을 맵에 저장
-        speechBubbleMap[target] = bubbleInstance;
-        Debug.Log($"{bubbleText.text} 말풍선 생성됨");
+        UnityWebRequest request = UnityWebRequest.Get(url);
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            string jsonResponse = request.downloadHandler.text;
+            PhotoItemDetail photo = JsonConvert.DeserializeObject<PhotoItemDetail>(jsonResponse);
+
+            // 사진 정보를 UI에 표시
+            if (bubbleText != null)
+            {
+                bubbleText.text = photo.title;
+            }
+            // SpeechBubbleManager를 통해 관리
+            SpeechBubbleManager.Instance.AddSpeechBubble(target, bubbleInstance);
+
+            Debug.Log($"'{photo.title}' 말풍선 생성됨");
+        }
+        else
+        {
+            Debug.LogError($"Failed to load photo details: {request.error}");
+        }
     }
 
     private void UpdateSpeechBubblePosition()
     {
+        if (uiCanvas == null || arCamera == null)
+        {
+            Debug.LogError("Canvas 또는 AR 카메라가 null입니다.");
+            return;
+        }
+
         RectTransform canvasRect = uiCanvas.GetComponent<RectTransform>();
 
-        foreach (var pair in speechBubbleMap)
+        foreach (var pair in SpeechBubbleManager.Instance.SpeechBubbleMap)
         {
             GameObject target = pair.Key; // 클라우드 앵커 GLB 오브젝트
             GameObject bubble = pair.Value; // 말풍선
 
             if (target == null || bubble == null)
             {
-                Debug.Log("null임");
+                Debug.LogWarning("Target 또는 Bubble이 null입니다.");
                 continue;
             }
 
@@ -251,24 +269,26 @@ public class CloudAnchorManager3 : MonoBehaviour
             // 3D 오브젝트의 월드 좌표를 화면 좌표로 변환
             Vector3 screenPosition = arCamera.WorldToScreenPoint(target.transform.position);
 
+            if (screenPosition.z < 0)
+            {
+                Debug.LogWarning("AR 객체가 카메라 뒤에 있습니다.");
+                bubble.SetActive(true);
+                continue;
+            }
+
             // 화면 좌표를 UI 캔버스의 로컬 좌표로 변환
             Vector2 uiPosition;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, arCamera, out uiPosition))
             {
                 // 말풍선 위치 업데이트
-                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 150); // 오브젝트 위로 약간 올림
-            }
-
-            // 화면 밖으로 나가거나 AR 카메라에서 보이지 않으면 숨기기
-            /*if (screenPosition.z < 0 || !RectTransformUtility.RectangleContainsScreenPoint(canvasRect, screenPosition, arCamera))
-            {
-                bubble.SetActive(false);
+                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 120); // 오브젝트 위로 약간 올림
+                bubble.SetActive(true);
             }
             else
             {
-                bubble.SetActive(true);
-            }*/
-            bubble.SetActive(true);
+                Debug.LogWarning("RectTransformUtility.ScreenPointToLocalPointInRectangle 실패.");
+                bubble.SetActive(false);
+            }
 
             // 말풍선을 카메라 방향으로 설정
             Vector3 cameraForward = arCamera.transform.forward;
@@ -276,6 +296,7 @@ public class CloudAnchorManager3 : MonoBehaviour
             bubble.transform.rotation = Quaternion.LookRotation(cameraForward, cameraUp);
         }
     }
+
 
     private IEnumerator LoadGLBFile(string url, Action<GameObject> onLoaded)
     {
@@ -313,7 +334,7 @@ public class CloudAnchorManager3 : MonoBehaviour
             // GLB 파일 데이터를 Unity 오브젝트로 변환
             ImportSettings settings = new ImportSettings(); // 필요한 설정을 초기화
             GameObject loadedObject = Importer.LoadFromBytes(glbData, settings);
-            
+
             if (loadedObject != null)
             {
                 Debug.Log("GLB 파일 로드 성공");
