@@ -260,7 +260,7 @@ public class CloudAnchorManager3 : MonoBehaviour
 
             if (target == null || bubble == null)
             {
-                Debug.LogWarning("Target 또는 Bubble이 null입니다.");
+                //Debug.LogWarning("Target 또는 Bubble이 null입니다.");
                 continue;
             }
 
@@ -269,12 +269,12 @@ public class CloudAnchorManager3 : MonoBehaviour
             // 3D 오브젝트의 월드 좌표를 화면 좌표로 변환
             Vector3 screenPosition = arCamera.WorldToScreenPoint(target.transform.position);
 
-            if (screenPosition.z < 0)
+            /*if (screenPosition.z < 0)
             {
                 Debug.LogWarning("AR 객체가 카메라 뒤에 있습니다.");
                 bubble.SetActive(true);
                 continue;
-            }
+            }*/
 
             // 화면 좌표를 UI 캔버스의 로컬 좌표로 변환
             Vector2 uiPosition;
@@ -286,8 +286,9 @@ public class CloudAnchorManager3 : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("RectTransformUtility.ScreenPointToLocalPointInRectangle 실패.");
-                bubble.SetActive(false);
+                //Debug.LogWarning("RectTransformUtility.ScreenPointToLocalPointInRectangle 실패.");
+                //왜 실패하는거지..? 근데 이걸 true로 해줘야 원래 위치에 잘 나옴
+                bubble.SetActive(true);
             }
 
             // 말풍선을 카메라 방향으로 설정
