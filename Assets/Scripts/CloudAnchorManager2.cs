@@ -120,6 +120,11 @@ public class CloudAnchorManager2 : MonoBehaviour
             {
                 anchorGameObject = loadedObject;
                 anchorGameObject.transform.SetParent(localAnchor.transform, false);
+
+                // 대부분 glb 모델의 크기가 커서, 처음 증강할 때 0.5배 한 걸로 시작하자
+                scale = 0.5f;
+                anchorGameObject.transform.localScale = Vector3.one * scale;
+
                 Debug.Log("로컬 앵커와 GLB Object 생성 완료");
             }));
         }
