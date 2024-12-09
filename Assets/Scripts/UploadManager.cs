@@ -13,6 +13,11 @@ public class UploadManager : MonoBehaviour
     private string title;
     private string place;
 
+    void Start()
+    {
+        title = "";
+        place = "";
+    }
     public void OnSelectPlaceButton(string buttonText)
     {
         place = buttonText;
@@ -21,8 +26,17 @@ public class UploadManager : MonoBehaviour
     public void OnClickUploadBtn()
     {
         title = inputTitle.text;
+        if (title == "")
+        {
+            title = "...";
+        }
+
+        if (place == "")
+        {
+            place = "기타";
+        }
         ShowLoading(true);
-        Debug.Log($"{title}, {place}");
+        Debug.Log($"=>{title}, {place}");
         StartCoroutine(UploadAndSwitchScene(title, place));
     }
 

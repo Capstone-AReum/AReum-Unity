@@ -97,14 +97,15 @@ public class StatPlaceManager : MonoBehaviour
 
             // 라벨 설정 (장소 및 Count)
             TextMeshProUGUI placeLabel = graphContainer.transform.Find("PlaceLabel").GetComponent<TextMeshProUGUI>();
-            if (string.IsNullOrEmpty(statPlaceItem.location))
+            placeLabel.text = statPlaceItem.location;
+            /*if (string.IsNullOrEmpty(statPlaceItem.location))
             {
                 placeLabel.text = "기타";
             }
             else
             {
                 placeLabel.text = statPlaceItem.location;
-            }
+            }*/
 
             TextMeshProUGUI countLabel = graphContainer.transform.Find("CountLabel").GetComponent<TextMeshProUGUI>();
             countLabel.text = $"{statPlaceItem.count}";
