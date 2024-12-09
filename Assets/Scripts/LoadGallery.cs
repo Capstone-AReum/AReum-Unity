@@ -130,6 +130,9 @@ public class LoadGallery : MonoBehaviour
             tex = RotateTexture(tex, rotation);
         }
 
+        // 최대 길이 1080픽셀로 리사이즈
+        tex = ResizeTextureIfNecessary(tex, 1080);
+
         // 새로운 RawImage 생성하여 부모 컨테이너에 추가
         RawImage newImage = Instantiate(imgPrefab, imageContainer);
         newImage.texture = tex;
@@ -199,6 +202,58 @@ public class LoadGallery : MonoBehaviour
         rotatedTexture.SetPixels32(rotatedPixels);
         rotatedTexture.Apply();
         return rotatedTexture;
+    }
+
+    // 이미지 validation (긴 변이 1080pixel을 넘지 않도록)
+    Texture2D ResizeTextureIfNecessary(Texture2D originalTexture, int maxLength)
+    {
+        int originalWidth = originalTexture.width;
+        int originalHeight = originalTexture.height;
+
+        // 현재 해상도가 제한을 초과하지 않으면 리사이즈하지 않음
+        if (originalWidth <= maxLength && originalHeight <= maxLength)
+        {
+            return originalTexture;
+        }
+
+        // 가장 긴 변 기준으로 비율 계산
+        float resizeRatio = 1.0f;
+        if (originalWidth > originalHeight)
+        {
+            resizeRatio = (float)maxLength / originalWidth; // 가로가 더 긴 경우
+        }
+        else
+        {
+            resizeRatio = (float)maxLength / originalHeight; // 세로가 더 긴 경우
+        }
+
+        int newWidth = Mathf.RoundToInt(originalWidth * resizeRatio);
+        int newHeight = Mathf.RoundToInt(originalHeight * resizeRatio);
+
+        // 새로운 텍스처 생성
+        Texture2D resizedTexture = new Texture2D(newWidth, newHeight, originalTexture.format, false);
+
+        // 리사이즈된 텍스처에 픽셀 데이터를 복사
+        Color[] originalPixels = originalTexture.GetPixels();
+        Color[] resizedPixels = new Color[newWidth * newHeight];
+
+        float xRatio = (float)originalWidth / newWidth;
+        float yRatio = (float)originalHeight / newHeight;
+
+        for (int y = 0; y < newHeight; y++)
+        {
+            for (int x = 0; x < newWidth; x++)
+            {
+                int srcX = Mathf.FloorToInt(x * xRatio);
+                int srcY = Mathf.FloorToInt(y * yRatio);
+                resizedPixels[y * newWidth + x] = originalPixels[srcY * originalWidth + srcX];
+            }
+        }
+
+        resizedTexture.SetPixels(resizedPixels);
+        resizedTexture.Apply();
+
+        return resizedTexture;
     }
 
     // 이전에 업로드된 이미지를 화면에 표시
