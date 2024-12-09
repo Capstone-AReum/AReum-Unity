@@ -68,8 +68,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Anchor ID: ua-ce1111111111111111111111111111'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2bea235455c35904aa65241beffed76f, type: 2}
-  m_sharedMaterial: {fileID: 65807639122661416, guid: 2bea235455c35904aa65241beffed76f, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
+  m_sharedMaterial: {fileID: 3288674337076530842, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -93,8 +93,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 5
-  m_fontSizeBase: 5
+  m_fontSize: 6
+  m_fontSizeBase: 6
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

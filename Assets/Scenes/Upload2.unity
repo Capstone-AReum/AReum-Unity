@@ -305,8 +305,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uB2E4\uC74C"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b4a1b6c916c743a45afdae52caa9baf0, type: 2}
-  m_sharedMaterial: {fileID: 5697454209648366137, guid: b4a1b6c916c743a45afdae52caa9baf0, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
+  m_sharedMaterial: {fileID: 3288674337076530842, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -528,8 +528,8 @@ MonoBehaviour:
   m_text: "\uC99D\uAC15\uC2DC\uD0A4\uACE0 \uC2F6\uC740 \uB300\uD45C \uC0AC\uC9C4\uC744
     \uC120\uD0DD\uD574\uC8FC\uC138\uC694."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b4a1b6c916c743a45afdae52caa9baf0, type: 2}
-  m_sharedMaterial: {fileID: 5697454209648366137, guid: b4a1b6c916c743a45afdae52caa9baf0, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
+  m_sharedMaterial: {fileID: 3288674337076530842, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1228,8 +1228,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "10\uC6D4 3\uC77C \uBAA9\uC694\uC77C"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b4a1b6c916c743a45afdae52caa9baf0, type: 2}
-  m_sharedMaterial: {fileID: 5697454209648366137, guid: b4a1b6c916c743a45afdae52caa9baf0, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
+  m_sharedMaterial: {fileID: 3288674337076530842, guid: 4f0950e7efc418141ae205d7f81a203b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1253,13 +1253,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
-  m_fontSizeBase: 50
+  m_fontSize: 45
+  m_fontSizeBase: 45
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
