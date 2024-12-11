@@ -6,9 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Upload2 - audio.unity
-    guid: fe2b68a2132878c4fa8d3b442ba2274f
-  - enabled: 1
     path: Assets/Scenes/Main.unity
     guid: 92f464357a2a68a478c4bce4f7e2be1f
   - enabled: 1
@@ -41,6 +38,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/AlbumDetailFromMain.unity
     guid: ea18cfbd61565c540b5d0b1c9c359992
+  - enabled: 1
+    path: Assets/Scenes/Upload2 - audio.unity
+    guid: fe2b68a2132878c4fa8d3b442ba2274f
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: c2b99c9ce7a38fd4c98b8bcb911e743e, type: 2}
     UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: c63e7626ac83f6b40be4d4f8b7c8676e, type: 2}
