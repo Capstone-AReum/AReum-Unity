@@ -23,7 +23,8 @@ public class GetModelManager : MonoBehaviour
         popupPanel.SetActive(false);
 
         Debug.Log("SF3D API 호출 시작");
-        glbUrl = "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/tmpvx8y5_yk.glb";
+        //glbUrl = "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/tmpvx8y5_yk.glb"; // 카피바라
+        glbUrl = "https://cap-areum.s3.ap-northeast-2.amazonaws.com/models/tmp_d0ju8ct.glb"; // 초록
         SceneManager.LoadScene("Upload3");
         ///StartCoroutine(SendModelRequest());
     }
