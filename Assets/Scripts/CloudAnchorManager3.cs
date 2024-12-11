@@ -12,6 +12,7 @@ using UnityEngine.Networking;
 using Siccity.GLTFUtility;
 using UnityEngine.EventSystems;
 using Newtonsoft.Json;
+using UnityEngine.SceneManagement;
 
 // Main Scene에서 Resolve 시 사용
 public class CloudAnchorManager3 : MonoBehaviour
@@ -218,6 +219,7 @@ public class CloudAnchorManager3 : MonoBehaviour
         // 말풍선 새로 생성
         GameObject bubbleInstance = Instantiate(speechBubblePrefab, uiCanvas.transform);
         var bubbleText = bubbleInstance.GetComponentInChildren<TextMeshProUGUI>();
+        var button = bubbleInstance.GetComponentInChildren<Button>(); // 말풍선 내 버튼 컴포넌트
 
         UnityWebRequest request = UnityWebRequest.Get(url);
         yield return request.SendWebRequest();
@@ -232,6 +234,13 @@ public class CloudAnchorManager3 : MonoBehaviour
             {
                 bubbleText.text = photo.title;
             }
+
+            // 버튼 클릭 이벤트 추가
+            if (button != null)
+            {
+                button.onClick.AddListener(() => OnBubbleClicked(photo.id));
+            }
+
             // SpeechBubbleManager를 통해 관리
             SpeechBubbleManager.Instance.AddSpeechBubble(target, bubbleInstance);
 
@@ -241,6 +250,12 @@ public class CloudAnchorManager3 : MonoBehaviour
         {
             Debug.LogError($"Failed to load photo details: {request.error}");
         }
+    }
+
+    private void OnBubbleClicked(int id)
+    {
+        AlbumManager.selectedPhotoId = id;
+        SceneManager.LoadScene("AlbumDetailFromMain", LoadSceneMode.Additive);
     }
 
     private void UpdateSpeechBubblePosition()

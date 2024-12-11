@@ -7,11 +7,13 @@ public class ARSceneManager : MonoBehaviour
 {
     private string currentLoadedScene = "";
 
-    public void GotoMainSingle(){
+    public void GotoMainSingle()
+    {
         SceneManager.LoadScene("Main", LoadSceneMode.Single);
     }
 
-    public void GotoSceneSingle(string sceneName){
+    public void GotoSceneSingle(string sceneName)
+    {
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
 
@@ -30,5 +32,16 @@ public class ARSceneManager : MonoBehaviour
 
         SceneManager.UnloadSceneAsync(currentLoadedScene);
         currentLoadedScene = ""; // 현재 로드된 씬 정보 초기화
+    }
+
+    public void UnLoadScene(string sceneName)
+    {
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogWarning("추가된 씬이 없습니다.");
+            return;
+        }
+        SceneManager.UnloadSceneAsync(sceneName);
+        Debug.Log("돌아감~");
     }
 }

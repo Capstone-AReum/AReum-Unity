@@ -260,7 +260,7 @@ public class AlbumManager : MonoBehaviour
         // 선택된 사진의 ID 저장
         selectedPhotoId = photoId;
 
-        // AlbumDetail Scene으로 이동 (씬 이름은 상황에 맞게)
+        // AlbumDetail Scene으로 이동
         SceneManager.LoadScene("AlbumDetail");
     }
 
