@@ -327,6 +327,10 @@ public class LoadGallery : MonoBehaviour
             //Debug.Log($"Title: {response.title}, First Photo URL: {response.items[0].url}");
             Debug.Log(response.items);
             ImageManager.Instance.uploadedPhotos = response.items;
+
+            // 앨범 다시 로딩되도록 캐시 초기화
+            GlobalCache.CachedPhotoItems = new List<PhotoItem>();
+            GlobalCache.PhotoTextures = new Dictionary<int, Texture2D>();
         }
         else
         {
