@@ -14,6 +14,7 @@ using Siccity.GLTFUtility;
 using UnityEngine.EventSystems;
 using Newtonsoft.Json;
 using UnityEngine.SceneManagement;
+using NativeGalleryNamespace;
 
 // Main Scene에서 Resolve 시 사용
 public class CloudAnchorManager3 : MonoBehaviour
@@ -26,7 +27,7 @@ public class CloudAnchorManager3 : MonoBehaviour
     //public Button resetButton;
 
     // 메시지 출력 텍스트
-    public TextMeshProUGUI messageText;
+    //public TextMeshProUGUI messageText;
 
     // 상태변수
     public Mode mode = Mode.READY;
@@ -44,6 +45,12 @@ public class CloudAnchorManager3 : MonoBehaviour
     [SerializeField] private Canvas uiCanvas; // 말풍선 UI가 배치될 캔버스
     [SerializeField] private Camera arCamera; // AR 카메라
     [SerializeField] private GameObject speechBubblePrefab; // 말풍선 프리팹
+
+    // ProgressBar 관련
+    [SerializeField] private GameObject progressPanel; // 진행바 부모 패널
+    [SerializeField] private TextMeshProUGUI infoText; // resolve 진행 과정 설명
+    [SerializeField] private Slider resolveProgressBar; // resolve 작업 진행바
+    private float resolveProgress = 0f; // 진행 상태 (0 ~ 100)
 
     private GameObject speechBubbleInstance; // 말풍선 인스턴스
     private GameObject targetObject; // 대상 3D 오브젝트
@@ -75,11 +82,19 @@ public class CloudAnchorManager3 : MonoBehaviour
     void Start()
     {
         resolveButton.onClick.AddListener(OnResolveClick);
-        //resetButton.onClick.AddListener(OnResetClick);
+
+        // 슬라이더 초기화
+        if (resolveProgressBar != null)
+        {
+            progressPanel.gameObject.SetActive(false);
+            resolveProgressBar.value = 0;
+            resolveProgressBar.gameObject.SetActive(false);
+            Debug.Log("Settings DONE");
+        }
 
         // AnchorData 로드
         LoadAnchorData();
-        messageText.text = "시작";
+        //messageText.text = "시작";
     }
 
     void Update()
@@ -96,10 +111,13 @@ public class CloudAnchorManager3 : MonoBehaviour
 
     public void OnResolveClick()
     {
+        progressPanel.gameObject.SetActive(true);
+
         if (mode == Mode.READY)
         {
             mode = Mode.RESOLVE; // 상태를 RESOLVE로 변경
-            messageText.text = "클라우드 앵커 리졸빙 시작";
+            //messageText.text = "클라우드 앵커 리졸빙 시작";
+            infoText.text = "클라우드 앵커를 리졸빙 하는 중입니다..";
             Debug.Log("클라우드 앵커 리졸빙 시작");
 
             // 모든 클라우드 앵커 리졸빙 시작
@@ -108,7 +126,8 @@ public class CloudAnchorManager3 : MonoBehaviour
         else
         {
             Debug.LogWarning("현재 상태에서 리졸빙 작업을 시작할 수 없습니다.");
-            messageText.text = "리졸빙 불가능한 상태입니다.";
+            //messageText.text = "리졸빙 불가능한 상태입니다.";
+            infoText.text = "리졸빙 불가능한 상태입니다.";
         }
     }
 
@@ -119,7 +138,8 @@ public class CloudAnchorManager3 : MonoBehaviour
         if (anchorDataMap.Count == 0)
         {
             Debug.LogError("저장된 Cloud Anchor가 없습니다.");
-            messageText.text = "저장된 클라우드 앵커가 없음";
+            //messageText.text = "저장된 클라우드 앵커가 없음";
+            infoText.text = "저장된 클라우드 앵커가 없습니다.";
             mode = Mode.READY;
             return;
         }
@@ -131,19 +151,28 @@ public class CloudAnchorManager3 : MonoBehaviour
     {
         isResolving = true;
 
+        if (resolveProgressBar != null)
+        {
+            resolveProgressBar.gameObject.SetActive(true); // 슬라이더 표시
+        }
+
+        int totalAnchors = anchorDataMap.Count; // 클라우드 앵커 총 개수
+        int resolvedCount = 0;  // 실패든 성공이든 리졸빙 완료된 클라우드 앵커 개수
+        int failedCount = 0;    // 실패한 클라우드 앵커 개수
+
         foreach (var kvp in anchorDataMap)
         {
             string cloudAnchorId = kvp.Key;
             AnchorData data = kvp.Value;
 
-            messageText.text = $"클라우드 앵커 리졸빙 시작: ID = {cloudAnchorId}";
+            //messageText.text = $"클라우드 앵커 리졸빙 시작: ID = {cloudAnchorId}";
 
             ResolveCloudAnchorPromise promise = anchorManager.ResolveCloudAnchorAsync(cloudAnchorId);
 
             if (promise == null)
             {
                 Debug.LogError($"클라우드 앵커 리졸빙 요청 실패: ID = {cloudAnchorId}");
-                messageText.text = $"클라우드 앵커 리졸빙 요청 실패: ID = {cloudAnchorId}";
+                //messageText.text = $"클라우드 앵커 리졸빙 요청 실패: ID = {cloudAnchorId}";
                 continue;
             }
 
@@ -153,6 +182,8 @@ public class CloudAnchorManager3 : MonoBehaviour
             while (promise.State == PromiseState.Pending && elapsedTime < timeout)
             {
                 yield return new WaitForSeconds(1f);
+                float progress = (elapsedTime / timeout) * 100f; // 타임아웃 기준 진행도 계산
+                UpdateResolveProgress(progress);
                 elapsedTime += 1f;
             }
 
@@ -160,14 +191,26 @@ public class CloudAnchorManager3 : MonoBehaviour
             if (promise.State == PromiseState.Pending)
             {
                 Debug.LogError($"클라우드 앵커 리졸빙 타임아웃: ID = {cloudAnchorId}");
-                messageText.text = $"클라우드 앵커 리졸빙 타임아웃: ID = {cloudAnchorId}";
+                //messageText.text = $"클라우드 앵커 리졸빙 타임아웃: ID = {cloudAnchorId}";
+
+                resolvedCount++;
+                UpdateResolveProgress((float)resolvedCount / totalAnchors * 100f); // 전체 진행도 업데이트
+
+                failedCount++;
+                infoText.text = $"클라우드 앵커를 리졸빙 하는 중입니다.. ({resolvedCount - failedCount}/{totalAnchors} 성공)";
+
                 continue;
             }
 
             if (promise.Result.CloudAnchorState == CloudAnchorState.Success)
             {
                 Debug.Log($"클라우드 앵커 리졸빙 성공: ID = {cloudAnchorId}");
-                messageText.text = $"클라우드 앵커 리졸빙 성공: ID = {cloudAnchorId}";
+                //messageText.text = $"클라우드 앵커 리졸빙 성공: ID = {cloudAnchorId}";
+
+                resolvedCount++;
+                UpdateResolveProgress((float)resolvedCount / totalAnchors * 100f); // 전체 진행도 업데이트
+
+                infoText.text = $"클라우드 앵커를 리졸빙 하는 중입니다.. ({resolvedCount - failedCount}/{totalAnchors} 성공)";
 
                 ARCloudAnchor resolvedAnchor = promise.Result.Anchor;
 
@@ -195,11 +238,24 @@ public class CloudAnchorManager3 : MonoBehaviour
             else
             {
                 Debug.LogError($"클라우드 앵커 리졸빙 실패: ID = {cloudAnchorId}, 상태: {promise.Result.CloudAnchorState}");
-                messageText.text = $"클라우드 앵커 리졸빙 실패: ID = {cloudAnchorId}, 상태: {promise.Result.CloudAnchorState}";
+                //messageText.text = $"클라우드 앵커 리졸빙 실패: ID = {cloudAnchorId}, 상태: {promise.Result.CloudAnchorState}";
             }
         }
         mode = Mode.READY;
+        isResolving = false;
+
+        // 진행 바를 숨기기 위한 코루틴 호출
+        StartCoroutine(HideProgressPanelAfterDelay(3.0f));
     }
+
+    private void UpdateResolveProgress(float progress)
+    {
+        if (resolveProgressBar != null)
+        {
+            resolveProgressBar.value = progress;
+        }
+    }
+
 
     public void CreateSpeechBubble(GameObject target, int sourceId)
     {
@@ -374,7 +430,7 @@ public class CloudAnchorManager3 : MonoBehaviour
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, arCamera, out uiPosition))
             {
                 // 말풍선 위치 업데이트
-                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 120); // 오브젝트 위로 약간 올림
+                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 130); // 오브젝트 위로 약간 올림
                 bubble.SetActive(true);
             }
             else
@@ -503,7 +559,7 @@ public class CloudAnchorManager3 : MonoBehaviour
 
         // 5. 상태 초기화
         Debug.Log("Reset 완료: 모든 오브젝트 및 앵커 삭제");
-        messageText.text = "Cloud Anchor가 모두 삭제되었습니다.";
+        //messageText.text = "Cloud Anchor가 모두 삭제되었습니다.";
         mode = Mode.READY;
     }
 
@@ -517,4 +573,14 @@ public class CloudAnchorManager3 : MonoBehaviour
         EventSystem.current.RaycastAll(eventDataCurPosition, results);
         return results.Count > 0;
     }
+
+    private IEnumerator HideProgressPanelAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (progressPanel != null)
+        {
+            progressPanel.SetActive(false);
+        }
+    }
+
 }
