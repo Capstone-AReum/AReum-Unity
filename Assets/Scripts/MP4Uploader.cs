@@ -4,8 +4,6 @@ using UnityEngine.Networking;
 
 public class MP4Uploader : MonoBehaviour
 {
-  public static int thumbnailId;
-
   public void PickMP4File()
   {
     // NativeGallery를 사용하여 MP4 파일 선택
@@ -38,7 +36,7 @@ public class MP4Uploader : MonoBehaviour
   {
     // 서버 URL
     string url = "http://ec2-43-200-16-231.ap-northeast-2.compute.amazonaws.com/albums/voice";
-    string paramUrl = "?thumbnail_id=" + thumbnailId;
+    string paramUrl = "?thumbnail_id=" + GetModelManager.thumbnailId;
 
     string patchUrl = url + paramUrl;
 

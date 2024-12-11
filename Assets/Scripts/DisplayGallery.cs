@@ -118,7 +118,7 @@ public class DisplayGallery : MonoBehaviour
     public void OnNextButtonClicked()
     {
         Debug.Log($"thumbnail API 호출 할 id : {selectedPhotoId}");
-        MP4Uploader.thumbnailId = selectedPhotoId;
+        //MP4Uploader.thumbnailId = selectedPhotoId;
         ImageManager.Instance.ResetManager();
     }
 

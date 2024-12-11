@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Audio;
 
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
@@ -67,9 +68,9 @@ public class CloudAnchorManager3 : MonoBehaviour
     // Cloud Anchor 데이터 관리용
     private Dictionary<string, AnchorData> anchorDataMap = new Dictionary<string, AnchorData>();
 
-    // 현재 변환 정보
-    private float scale = 1.0f;
-    private float angle = 0.0f;
+    // 음성 관련
+    private AudioSource audioSource; // 음성 파일 재생용
+    private Dictionary<int, AudioClip> audioClipCache = new Dictionary<int, AudioClip>(); // 음성 파일 캐싱
 
     void Start()
     {
@@ -255,7 +256,84 @@ public class CloudAnchorManager3 : MonoBehaviour
     private void OnBubbleClicked(int id)
     {
         AlbumManager.selectedPhotoId = id;
-        SceneManager.LoadScene("AlbumDetailFromMain", LoadSceneMode.Additive);
+        string apiUrl = $"http://ec2-43-200-16-231.ap-northeast-2.compute.amazonaws.com/albums/{id}/sounds";
+
+        // 이미 다운로드된 AudioClip이 있다면 바로 재생
+        if (audioClipCache.ContainsKey(id))
+        {
+            PlayAudio(audioClipCache[id]);
+        }
+        else
+        {
+            // MP3 URL을 가져오고 음성 파일 다운로드 및 재생
+            StartCoroutine(FetchAudioUrlAndPlay(apiUrl, id));
+        }
+    }
+
+    private IEnumerator FetchAudioUrlAndPlay(string apiUrl, int id)
+    {
+        // 첫 번째 요청: MP3 파일의 URL 문자열 가져오기
+        UnityWebRequest urlRequest = UnityWebRequest.Get(apiUrl);
+        yield return urlRequest.SendWebRequest();
+
+        if (urlRequest.result == UnityWebRequest.Result.Success)
+        {
+            // 서버에서 반환된 MP3 URL 문자열
+            string mp3Url = urlRequest.downloadHandler.text;
+            mp3Url = mp3Url.Trim('"'); // 앞뒤 따옴표 제거
+            Debug.Log($"Processed MP3 URL: {mp3Url}");
+
+            // 두 번째 요청: MP3 파일 다운로드 및 재생
+            StartCoroutine(DownloadAndPlayAudio(mp3Url, id));
+        }
+        else
+        {
+            Debug.LogError($"Failed to fetch MP3 URL: {urlRequest.error}");
+        }
+    }
+
+    private IEnumerator DownloadAndPlayAudio(string mp3Url, int id)
+    {
+        // URL 공백 제거
+        mp3Url = mp3Url.Trim();
+
+        UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(mp3Url, AudioType.MPEG);
+        yield return audioRequest.SendWebRequest();
+
+        if (audioRequest.result == UnityWebRequest.Result.Success)
+        {
+            AudioClip audioClip = DownloadHandlerAudioClip.GetContent(audioRequest);
+
+            if (audioClip != null)
+            {
+                audioClipCache[id] = audioClip;
+                PlayAudio(audioClip);
+            }
+            else
+            {
+                Debug.LogError("Audio clip is null.");
+            }
+        }
+        else
+        {
+            Debug.LogError($"Failed to download MP3 file: {audioRequest.error}");
+        }
+    }
+
+
+    private void PlayAudio(AudioClip clip)
+    {
+        if (audioSource == null)
+        {
+            // AudioSource가 없으면 동적으로 생성
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // AudioSource 설정 및 재생
+        audioSource.clip = clip;
+        audioSource.Play();
+
+        Debug.Log("Audio playing...");
     }
 
     private void UpdateSpeechBubblePosition()
