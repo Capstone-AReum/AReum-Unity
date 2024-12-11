@@ -3,9 +3,12 @@ apply plugin: 'com.android.library'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.google.android.gms:play-services-auth:16+'
+    implementation 'com.unity3d.player:unityplayer:+' // UnityPlayer 라이브러리
     implementation(name: 'arcore_client', ext:'aar')
-    implementation(name: 'ARPresto', ext:'aar')
     implementation(name: 'UnityARCore', ext:'aar')
+    implementation(name: 'NativeGallery', ext:'aar')
+    implementation(name: 'ARPresto', ext:'aar')
     implementation(name: 'unityandroidpermissions', ext:'aar')
 
 }
@@ -27,7 +30,8 @@ android {
         }
         versionCode 1
         versionName '0.1'
-        consumerProguardFiles 'proguard-unity.txt'
+        consumerProguardFiles 'proguard-unity.txt', 'proguard-user.txt'
+        manifestPlaceholders = [ARCORE_MIN_APK_VERSION: "220920000"]
     }
 
     lintOptions {

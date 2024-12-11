@@ -1,0 +1,14 @@
+-keep class com.google.ar.** { *; }
+-keep class com.google.android.gms.common.** { *; }
+-keep class com.google.android.gms.location.** { *; }
+-keep class com.google.android.gms.auth.** { *; }
+-keep class com.google.android.gms.tasks.** { *; }
+-keep class com.unity3d.plugin.** { *; }
+-keepattributes *Annotation*
+-dontwarn com.unity3d.plugin.**
+### Module Progurad Rules starts ###
+
+## Default ##
+-keep class com.unity3d.plugin.* { *; }
+
+### Module Progurad Rules ends ###
