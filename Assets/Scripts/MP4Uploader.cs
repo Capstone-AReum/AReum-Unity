@@ -1,9 +1,13 @@
 using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class MP4Uploader : MonoBehaviour
 {
+  public TextMeshProUGUI fileNameText;
+  public GameObject loadingPanel;
+
   public void PickMP4File()
   {
     // NativeGallery를 사용하여 MP4 파일 선택
@@ -15,6 +19,7 @@ public class MP4Uploader : MonoBehaviour
             Debug.Log("Selected MP4 Path: " + path);
 
             // 선택된 파일을 서버로 업로드
+            ShowLoading(true);
             StartCoroutine(UploadMP4File(path));
           }
           else
@@ -66,11 +71,23 @@ public class MP4Uploader : MonoBehaviour
     if (request.result == UnityWebRequest.Result.Success)
     {
       Debug.Log("MP4 uploaded successfully via PATCH: " + request.downloadHandler.text);
+      fileNameText.text = Path.GetFileName(filePath);
+      ShowLoading(false);
     }
     else
     {
       Debug.LogError("MP4 upload failed via PATCH: " + request.error);
       Debug.LogError("Response: " + request.downloadHandler.text);
+      fileNameText.text = "오류가 발생하였습니다.";
+      ShowLoading(false);
+    }
+  }
+
+  void ShowLoading(bool isLoading)
+  {
+    if (loadingPanel != null)
+    {
+      loadingPanel.SetActive(isLoading);
     }
   }
 }

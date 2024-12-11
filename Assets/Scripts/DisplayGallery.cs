@@ -110,35 +110,13 @@ public class DisplayGallery : MonoBehaviour
         {
             nextButton.interactable = true;
         }
-
-        // API로 선택한 ID를 넘기는 로직 추가 (나중에 모델 만드는 api 호출 예정)
-        //StartCoroutine(SendSelectedPhotoId(photoId));
     }
 
     public void OnNextButtonClicked()
     {
         Debug.Log($"thumbnail API 호출 할 id : {selectedPhotoId}");
-        //MP4Uploader.thumbnailId = selectedPhotoId;
         ImageManager.Instance.ResetManager();
     }
-
-    /*IEnumerator SendSelectedPhotoId(int photoId)
-    {
-        WWWForm form = new WWWForm();
-        form.AddField("selected_photo_id", photoId);
-
-        UnityWebRequest request = UnityWebRequest.Post("http://example.com/api/select-photo", form);
-        yield return request.SendWebRequest();
-
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            Debug.Log("Photo ID sent successfully!");
-        }
-        else
-        {
-            Debug.LogError($"Failed to send photo ID: {request.error}");
-        }
-    }*/
 
     void CheckLoadingComplete()
     {

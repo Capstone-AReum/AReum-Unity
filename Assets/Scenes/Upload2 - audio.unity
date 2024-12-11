@@ -558,7 +558,7 @@ RectTransform:
   m_GameObject: {fileID: 473768643}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.95, y: 0.95, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 442153200}
@@ -963,7 +963,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.050980393}
+  m_Color: {r: 0.96862745, g: 0.96862745, b: 0.96862745, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1195,6 +1195,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e770469a2a5e64348b3a9d17980d5726, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fileNameText: {fileID: 0}
+  loadingPanel: {fileID: 0}
 --- !u!4 &751722897
 Transform:
   m_ObjectHideFlags: 0
@@ -1381,7 +1383,7 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 100
+    m_Top: 200
     m_Bottom: 0
   m_ChildAlignment: 1
   m_Spacing: 150
@@ -1535,7 +1537,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 1
-  m_Spacing: 0
+  m_Spacing: 20
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
