@@ -53,6 +53,8 @@ public class MP4Uploader : MonoBehaviour
     byte[] fileData = File.ReadAllBytes(filePath);
     string fileName = Path.GetFileName(filePath);
 
+    fileNameText.text = Path.GetFileName(filePath);
+
     // multipart/form-data 요청 구성
     WWWForm form = new WWWForm();
     form.AddBinaryData("file", fileData, fileName, "video/mp4");
@@ -71,7 +73,6 @@ public class MP4Uploader : MonoBehaviour
     if (request.result == UnityWebRequest.Result.Success)
     {
       Debug.Log("MP4 uploaded successfully via PATCH: " + request.downloadHandler.text);
-      fileNameText.text = Path.GetFileName(filePath);
       ShowLoading(false);
     }
     else

@@ -1195,8 +1195,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e770469a2a5e64348b3a9d17980d5726, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fileNameText: {fileID: 0}
-  loadingPanel: {fileID: 0}
+  fileNameText: {fileID: 560728362}
+  loadingPanel: {fileID: 882770591}
 --- !u!4 &751722897
 Transform:
   m_ObjectHideFlags: 0
