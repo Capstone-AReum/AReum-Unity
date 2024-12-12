@@ -414,7 +414,7 @@ public class CloudAnchorManager3 : MonoBehaviour
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, arCamera, out uiPosition))
             {
                 // 말풍선 위치 업데이트
-                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 130); // 오브젝트 위로 약간 올림
+                bubbleRect.anchoredPosition = uiPosition + new Vector2(0, 150); // 오브젝트 위로 약간 올림
                 bubble.SetActive(true);
             }
             else
@@ -428,6 +428,7 @@ public class CloudAnchorManager3 : MonoBehaviour
             Vector3 cameraForward = arCamera.transform.forward;
             Vector3 cameraUp = arCamera.transform.up;
             bubble.transform.rotation = Quaternion.LookRotation(cameraForward, cameraUp);
+            bubble.SetActive(true);
         }
     }
 
