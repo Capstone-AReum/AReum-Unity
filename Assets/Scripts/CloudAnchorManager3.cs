@@ -109,7 +109,6 @@ public class CloudAnchorManager3 : MonoBehaviour
         if (mode == Mode.READY)
         {
             mode = Mode.RESOLVE; // 상태를 RESOLVE로 변경
-            infoText.text = "클라우드 앵커를 리졸빙 하는 중입니다..";
             Debug.Log("클라우드 앵커 리졸빙 시작");
 
             // 모든 클라우드 앵커 리졸빙 시작
@@ -155,6 +154,8 @@ public class CloudAnchorManager3 : MonoBehaviour
             string cloudAnchorId = kvp.Key;
             AnchorData data = kvp.Value;
 
+            infoText.text = $"클라우드 앵커를 리졸빙 하는 중입니다.. ({resolvedCount - failedCount}/{totalAnchors} 성공)";
+
             ResolveCloudAnchorPromise promise = anchorManager.ResolveCloudAnchorAsync(cloudAnchorId);
 
             if (promise == null)
@@ -169,7 +170,7 @@ public class CloudAnchorManager3 : MonoBehaviour
             while (promise.State == PromiseState.Pending && elapsedTime < timeout)
             {
                 yield return new WaitForSeconds(1f);
-                float progress = (elapsedTime / timeout) * 100f; // 타임아웃 기준 진행도 계산
+                float progress = (((resolvedCount * timeout) + elapsedTime) / (timeout * totalAnchors)) * 100f; // 타임아웃 기준 진행도 계산
                 UpdateResolveProgress(progress);
                 elapsedTime += 1f;
             }
@@ -180,7 +181,7 @@ public class CloudAnchorManager3 : MonoBehaviour
                 Debug.LogError($"클라우드 앵커 리졸빙 타임아웃: ID = {cloudAnchorId}");
 
                 resolvedCount++;
-                UpdateResolveProgress((float)resolvedCount / totalAnchors * 100f); // 전체 진행도 업데이트
+                //UpdateResolveProgress((float)resolvedCount / totalAnchors * 100f); // 전체 진행도 업데이트
 
                 failedCount++;
                 infoText.text = $"클라우드 앵커를 리졸빙 하는 중입니다.. ({resolvedCount - failedCount}/{totalAnchors} 성공)";
@@ -193,7 +194,8 @@ public class CloudAnchorManager3 : MonoBehaviour
                 Debug.Log($"클라우드 앵커 리졸빙 성공: ID = {cloudAnchorId}");
 
                 resolvedCount++;
-                UpdateResolveProgress((float)resolvedCount / totalAnchors * 100f); // 전체 진행도 업데이트
+                float progress = (((resolvedCount * timeout) + elapsedTime) / (timeout * totalAnchors)) * 100f;
+                UpdateResolveProgress(progress);// 전체 진행도 업데이트
 
                 infoText.text = $"클라우드 앵커를 리졸빙 하는 중입니다.. ({resolvedCount - failedCount}/{totalAnchors} 성공)";
 
